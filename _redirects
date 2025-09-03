@@ -1,23 +1,23 @@
 # Netlify Redirects for Spectrum Outfitters Tools
 # This file handles routing for all our business tools
 
-# Tools Hub - Main landing page
-/ -> /tools-hub.html
+# Tools Hub - Main landing page (explicit)
+/ /index.html 200
 
 # PPF Calculator
-/ppf -> /index.html
-/ppf/ -> /index.html
+/ppf /ppf-calculator.html 200
+/ppf/ /ppf-calculator.html 200
 
 # Future tools (when you create them)
-/wrapping -> /wrapping-calculator.html
-/tinting -> /tinting-calculator.html
-/paint-correction -> /paint-correction-calculator.html
-/ceramic -> /ceramic-coating-calculator.html
-/maintenance -> /maintenance-scheduler.html
+/wrapping /wrapping-calculator.html 200
+/tinting /tinting-calculator.html 200
+/paint-correction /paint-correction-calculator.html 200
+/ceramic /ceramic-coating-calculator.html 200
+/maintenance /maintenance-scheduler.html 200
 
 # Redirect old paths to new structure
-/calculator -> /ppf
-/ppf-calculator -> /ppf
+/calculator /ppf 301
+/ppf-calculator /ppf 301
 
-# Handle 404s gracefully
-/* -> /tools-hub.html
+# Handle 404s gracefully - redirect to tools hub
+/* /index.html 200

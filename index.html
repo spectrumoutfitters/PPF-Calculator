@@ -3,666 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spectrum Outfitters PPF Pricing Calculator - Enhanced</title>
+    <title>Business Tools - Spectrum Outfitters</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .calculator-section { background-color: #f9fafb; padding: 1.5rem; border-radius: 0.5rem; }
-        .results-section { background-color: #eff6ff; padding: 1.5rem; border-radius: 0.5rem; }
-        .price-display { background-color: #dcfce7; padding: 1rem; border-radius: 0.5rem; text-align: center; }
-        .floor-price { background-color: #fef2f2; border: 1px solid #fecaca; padding: 0.75rem; border-radius: 0.5rem; }
-        .cost-breakdown { background-color: white; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; }
-        .service-info { background-color: #f0f9ff; border: 1px solid #bae6fd; padding: 0.75rem; border-radius: 0.5rem; }
+        .tool-card { 
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        .tool-card:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: #3b82f6;
+        }
+        .coming-soon { 
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            opacity: 0.7;
+        }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gray-50 min-h-screen">
     <div class="max-w-6xl mx-auto p-6">
         <!-- Header -->
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-800 mb-2">🧮 Spectrum Outfitters PPF Pricing Calculator</h1>
-            <p class="text-gray-600">Professional Paint Protection Film Pricing Tool with Service Types</p>
+        <div class="text-center mb-12">
+            <div class="flex items-center justify-center gap-3 mb-6">
+                <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                    <span class="text-white font-bold text-xl">S</span>
+                </div>
+                <h1 class="text-4xl font-bold text-gray-800">Spectrum Outfitters</h1>
+            </div>
+            <h2 class="text-3xl font-semibold text-gray-700 mb-4">Professional Business Tools</h2>
+            <p class="text-gray-600 text-lg">Access our suite of professional calculators and business tools</p>
         </div>
 
-        <div class="grid lg:grid-cols-3 gap-6">
-            <!-- Vehicle & Materials -->
-            <div class="calculator-section">
-                <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
-                    🚗 Vehicle & Materials
-                </h2>
-
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Vehicle Type</label>
-                        <select id="vehicleType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="car">Car/Sedan</option>
-                            <option value="coupe">Coupe/Sports Car</option>
-                            <option value="truck">Truck/Pickup</option>
-                            <option value="suv">SUV/Large Vehicle</option>
-                            <option value="van">Van/Commercial</option>
-                            <option value="custom">Custom</option>
-                        </select>
+        <!-- Tools Grid -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            <!-- PPF Calculator - ACTIVE -->
+            <div class="tool-card rounded-xl p-6 cursor-pointer" onclick="window.location.href='/ppf'">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl">🧮</span>
                     </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Service Type</label>
-                        <select id="serviceType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="full-front">Full Front (Hood, Fenders, Bumper, Mirrors)</option>
-                            <option value="track-pack">Track Pack (Hood, Fenders, Mirrors)</option>
-                            <option value="full-vehicle">Full Vehicle (Complete Coverage)</option>
-                            <option value="replacement-parts">Replacement Parts (Individual Panels)</option>
-                            <option value="custom-service">Custom Service</option>
-                        </select>
-                        <p class="text-xs text-gray-500 mt-1">Auto-adjusts materials and labor</p>
-                    </div>
-
-                    <!-- Service Information Display -->
-                    <div class="service-info" id="serviceInfo">
-                        <div class="text-sm font-medium text-blue-800 mb-1" id="serviceLabel">Full Front</div>
-                        <div class="text-xs text-blue-600" id="serviceDescription">Hood, front fenders, front bumper, mirrors, headlights</div>
-                        <div class="text-xs text-blue-600 mt-1">Estimated: <span id="serviceEstimate">0.7 rolls, 1.5 days</span></div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">PPF Type</label>
-                        <div class="flex gap-2">
-                            <button id="glossBtn" class="flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white">Gloss PPF ($800/roll)</button>
-                            <button id="stealthBtn" class="flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300">Stealth PPF ($1,100/roll)</button>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Rolls Needed</label>
-                        <input type="number" id="rollsNeeded" value="0.7" min="0" step="0.1" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <p class="text-xs text-gray-500 mt-1">1 roll typically covers a regular coupe/sedan</p>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Days Needed</label>
-                        <input type="number" id="daysNeeded" value="1.5" min="0" step="0.5" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <p class="text-xs text-gray-500 mt-1">Daily overhead: $300 (fixed)</p>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">PPF Calculator</h3>
+                    <p class="text-gray-600 mb-4">Professional Paint Protection Film pricing calculator with service types</p>
+                    <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                        ✅ Available Now
                     </div>
                 </div>
             </div>
 
-            <!-- Labor & Quoting -->
-            <div class="calculator-section">
-                <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
-                    💰 Labor & Quoting
-                </h2>
-
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Labor Type</label>
-                        <div class="flex gap-2">
-                            <button id="contractedBtn" class="flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white">Contracted</button>
-                            <button id="hourlyBtn" class="flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300">Hourly</button>
-                        </div>
+            <!-- Wrapping Calculator - COMING SOON -->
+            <div class="tool-card coming-soon rounded-xl p-6">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-gray-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl">🎨</span>
                     </div>
-
-                    <div id="contractedInput">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Contracted Cost</label>
-                        <input type="number" id="contractedCost" value="2000" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-
-                    <div id="hourlyInput" class="hidden">
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Hourly Rate</label>
-                                <input type="number" id="hourlyRate" value="75" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Hours</label>
-                                <input type="number" id="hoursNeeded" value="26" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Customer Type</label>
-                        <div class="flex gap-2">
-                            <button id="customerBtn" class="flex-1 px-3 py-2 text-sm rounded bg-green-600 text-white">Customer</button>
-                            <button id="dealerBtn" class="flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300">Dealer (-15%)</button>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-3 gap-3">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Rounding</label>
-                            <select id="roundStep" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="0">None</option>
-                                <option value="25">$25 (up)</option>
-                                <option value="50" selected>$50 (up)</option>
-                                <option value="100">$100 (up)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tax %</label>
-                            <input type="number" id="taxPct" value="0" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Deposit %</label>
-                            <input type="number" id="depositPct" value="50" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">Wrapping Calculator</h3>
+                    <p class="text-gray-500 mb-4">Vehicle wrapping pricing and material calculator</p>
+                    <div class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                        🚧 Coming Soon
                     </div>
                 </div>
             </div>
 
-            <!-- Results -->
-            <div class="results-section">
-                <h2 class="text-xl font-semibold mb-4 text-blue-800">Quote Summary</h2>
-
-                <div class="space-y-4">
-                    <!-- Customer Price -->
-                    <div class="price-display">
-                        <div class="text-sm text-green-700 mb-1" id="customerTypeLabel">Customer Price</div>
-                        <div class="text-3xl font-bold text-green-800" id="finalPrice">$0</div>
-                        <div class="text-xs text-green-600 mt-1" id="marginDisplay">0.0% margin</div>
+            <!-- Tinting Calculator - COMING SOON -->
+            <div class="tool-card coming-soon rounded-xl p-6">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-gray-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl">🕶️</span>
                     </div>
-
-                    <!-- Floor Price -->
-                    <div class="floor-price">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <div class="text-sm font-medium text-red-800">Floor Price (Do Not Go Below)</div>
-                                <div class="text-xs text-red-600">30% minimum margin required</div>
-                            </div>
-                            <div class="text-xl font-bold text-red-800" id="baselinePrice">$0</div>
-                        </div>
-                        <div class="mt-2 text-xs text-gray-600" id="negotiationRoom"></div>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">Tinting Calculator</h3>
+                    <p class="text-gray-500 mb-4">Window tinting pricing and material estimator</p>
+                    <div class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                        🚧 Coming Soon
                     </div>
+                </div>
+            </div>
 
-                    <!-- Cost Breakdown -->
-                    <div class="cost-breakdown">
-                        <div class="text-sm font-medium text-gray-700 mb-2">Cost Breakdown</div>
-                        <div class="space-y-1 text-sm">
-                            <div class="flex justify-between">
-                                <span class="text-gray-600" id="materialsLabel">Materials (0.7 rolls)</span>
-                                <span id="materialsCost">$0</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Labor</span>
-                                <span id="laborCost">$0</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600" id="overheadLabel">Overhead (1.5 days)</span>
-                                <span id="overheadCost">$0</span>
-                            </div>
-                            <div class="flex justify-between font-medium border-t pt-1">
-                                <span>Total Cost</span>
-                                <span id="totalCost">$0</span>
-                            </div>
-                        </div>
+            <!-- Paint Correction - COMING SOON -->
+            <div class="tool-card coming-soon rounded-xl p-6">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-gray-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl">✨</span>
                     </div>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">Paint Correction</h3>
+                    <p class="text-gray-500 mb-4">Paint correction time and pricing estimator</p>
+                    <div class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                        🚧 Coming Soon
+                    </div>
+                </div>
+            </div>
 
-                    <!-- Tax & Deposit -->
-                    <div class="cost-breakdown" id="taxDepositSection" style="display: none;">
-                        <div class="space-y-1 text-sm">
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Subtotal</span>
-                                <span id="subtotal">$0</span>
-                            </div>
-                            <div class="flex justify-between" id="taxRow" style="display: none;">
-                                <span class="text-gray-600" id="taxLabel">Tax (0%)</span>
-                                <span id="taxAmount">$0</span>
-                            </div>
-                            <div class="flex justify-between font-medium border-t pt-1" id="totalWithTaxRow" style="display: none;">
-                                <span>Total with Tax</span>
-                                <span id="totalWithTax">$0</span>
-                            </div>
-                            <div class="flex justify-between text-blue-600 font-medium" id="depositRow" style="display: none;">
-                                <span id="depositLabel">Deposit (50%)</span>
-                                <span id="depositAmount">$0</span>
-                            </div>
-                        </div>
+            <!-- Ceramic Coating - COMING SOON -->
+            <div class="tool-card coming-soon rounded-xl p-6">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-gray-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl">💎</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">Ceramic Coating</h3>
+                    <p class="text-gray-500 mb-4">Ceramic coating pricing and application time</p>
+                    <div class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                        🚧 Coming Soon
+                    </div>
+                </div>
+            </div>
+
+            <!-- Maintenance Scheduler - COMING SOON -->
+            <div class="tool-card coming-soon rounded-xl p-6">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-gray-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl">📅</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">Maintenance Scheduler</h3>
+                    <p class="text-gray-500 mb-4">Vehicle maintenance and service scheduling</p>
+                    <div class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                        🚧 Coming Soon
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Service Type Guide -->
-        <div class="mt-8 bg-gray-50 p-6 rounded-lg">
-            <h3 class="text-lg font-semibold mb-4 text-gray-800">Service Type Guide</h3>
-            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                <div class="bg-white p-4 rounded border">
-                    <div class="font-medium text-blue-800 mb-2">Full Front</div>
-                    <div class="text-gray-600 mb-1">Hood, front fenders, front bumper, mirrors, headlights</div>
-                    <div class="text-gray-500">0.7 rolls, 1.5 days</div>
+        <!-- Information Section -->
+        <div class="bg-white rounded-xl p-6 border border-gray-200">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">About Our Tools</h3>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-medium text-gray-700 mb-2">Professional Grade</h4>
+                    <p class="text-gray-600 text-sm">All calculators are built with industry-standard pricing and professional business logic.</p>
                 </div>
-                <div class="bg-white p-4 rounded border">
-                    <div class="font-medium text-green-800 mb-2">Track Pack</div>
-                    <div class="text-gray-600 mb-1">Hood, front fenders, mirrors</div>
-                    <div class="text-gray-500">0.6 rolls, 1.25 days</div>
+                <div>
+                    <h4 class="font-medium text-gray-700 mb-2">Always Updated</h4>
+                    <p class="text-gray-600 text-sm">Tools are regularly updated with current market rates and new service options.</p>
                 </div>
-                <div class="bg-white p-4 rounded border">
-                    <div class="font-medium text-purple-800 mb-2">Full Vehicle</div>
-                    <div class="text-gray-600 mb-1">Complete coverage including roof, doors, rear</div>
-                    <div class="text-gray-500">2.5 rolls, 4 days</div>
+                <div>
+                    <h4 class="font-medium text-gray-700 mb-2">Mobile Friendly</h4>
+                    <p class="text-gray-600 text-sm">All tools work perfectly on desktop, tablet, and mobile devices.</p>
                 </div>
-                <div class="bg-white p-4 rounded border">
-                    <div class="font-medium text-orange-800 mb-2">Replacement Parts</div>
-                    <div class="text-gray-600 mb-1">Individual panels like hood only, fender only</div>
-                    <div class="text-gray-500">0.3 rolls, 0.75 days</div>
+                <div>
+                    <h4 class="font-medium text-gray-700 mb-2">Free to Use</h4>
+                    <p class="text-gray-600 text-sm">Professional tools provided free to help you grow your business.</p>
                 </div>
             </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="mt-8 text-center space-x-4">
-            <button id="copyBtn" class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                📋 Copy Quote
-            </button>
-            <button id="resetBtn" class="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">
-                🔄 Reset
-            </button>
-        </div>
-
-        <!-- Professional Footer -->
+        <!-- Footer -->
         <div class="mt-12 border-t border-gray-200 pt-8">
             <div class="text-center">
-                <div class="flex items-center justify-center gap-3 mb-4">
-                    <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                        <span class="text-white font-bold text-sm">S</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-800">Spectrum Outfitters</h3>
-                </div>
-                <p class="text-gray-600 mb-2">Professional Paint Protection Film Services</p>
+                <p class="text-gray-600 mb-2">Professional Automotive Services & Business Tools</p>
                 <div class="text-sm text-gray-500 space-y-1">
-                    <p>PPF Installation • Vehicle Protection • Professional Service</p>
-                    <p class="font-medium text-blue-600">spectrumoutfitters.com</p>
-                </div>
-                <div class="mt-4 mb-4">
-                    <a href="/" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-                        <span>🔧</span>
-                        <span>View All Tools</span>
-                    </a>
-                </div>
-                <div class="text-xs text-gray-400">
-                    <p>© 2025 Spectrum Outfitters. All rights reserved.</p>
+                    <p>spectrumoutfitters.com</p>
+                    <p class="text-xs text-gray-400 mt-4">© 2025 Spectrum Outfitters. All rights reserved.</p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Constants
-        const BASELINE_MARGIN = 0.30;
-        const RETAIL_MARKUP = 0.30;
-        const DEALER_DISCOUNT = 0.15;
-        const DAILY_OVERHEAD = 300;
-
-        // Vehicle estimates
-        const vehicleEstimates = {
-            car: { rolls: 1, days: 5, label: 'Car/Sedan' },
-            coupe: { rolls: 1, days: 4, label: 'Coupe/Sports Car' },
-            truck: { rolls: 2, days: 7, label: 'Truck/Pickup' },
-            suv: { rolls: 2, days: 6, label: 'SUV/Large Vehicle' },
-            van: { rolls: 2, days: 8, label: 'Van/Commercial' },
-            custom: { rolls: 1, days: 5, label: 'Custom' }
-        };
-
-        // Service type estimates (rolls and days)
-        const serviceEstimates = {
-            'full-front': { 
-                rolls: 0.7, 
-                days: 1.5, 
-                label: 'Full Front',
-                description: 'Hood, front fenders, front bumper, mirrors, headlights'
-            },
-            'track-pack': { 
-                rolls: 0.6, 
-                days: 1.25, 
-                label: 'Track Pack',
-                description: 'Hood, front fenders, mirrors'
-            },
-            'full-vehicle': { 
-                rolls: 2.5, 
-                days: 4, 
-                label: 'Full Vehicle',
-                description: 'Complete coverage including roof, doors, rear'
-            },
-            'replacement-parts': { 
-                rolls: 0.3, 
-                days: 0.75, 
-                label: 'Replacement Parts',
-                description: 'Individual panels like hood only, fender only'
-            },
-            'custom-service': { 
-                rolls: 1, 
-                days: 5, 
-                label: 'Custom Service',
-                description: 'Manual input required'
-            }
-        };
-
-        // State
-        let currentState = {
-            vehicleType: 'car',
-            serviceType: 'full-front',
-            ppfType: 'gloss',
-            laborType: 'contracted',
-            customerType: 'customer',
-            roundStep: 50
-        };
-
-        // Utility functions
-        function usd(n) {
-            if (n === undefined || n === null || isNaN(n)) return '$0';
-            return n.toLocaleString(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
-        }
-
-        function pct(f) {
-            if (!isFinite(f)) return '0.0%';
-            return `${(f * 100).toFixed(1)}%`;
-        }
-
-        function roundUpTo(n, step) {
-            if (!step || step <= 0) return Math.round(n);
-            return Math.ceil(n / step) * step;
-        }
-
-        // Update service info display
-        function updateServiceInfo() {
-            const serviceType = currentState.serviceType;
-            const estimates = serviceEstimates[serviceType];
-            
-            document.getElementById('serviceLabel').textContent = estimates.label;
-            document.getElementById('serviceDescription').textContent = estimates.description;
-            document.getElementById('serviceEstimate').textContent = `${estimates.rolls} rolls, ${estimates.days} days`;
-        }
-
-        // Calculate results
-        function calculateResults() {
-            const rollsNeeded = parseFloat(document.getElementById('rollsNeeded').value) || 0;
-            const daysNeeded = parseFloat(document.getElementById('daysNeeded').value) || 0;
-            const contractedCost = parseInt(document.getElementById('contractedCost').value) || 0;
-            const hourlyRate = parseInt(document.getElementById('hourlyRate').value) || 0;
-            const hoursNeeded = parseInt(document.getElementById('hoursNeeded').value) || 0;
-            const taxPct = parseFloat(document.getElementById('taxPct').value) || 0;
-            const depositPct = parseFloat(document.getElementById('depositPct').value) || 0;
-
-            // Material cost
-            const materialCostPerRoll = currentState.ppfType === 'stealth' ? 1100 : 800;
-            const materialCost = rollsNeeded * materialCostPerRoll;
-
-            // Labor cost
-            const laborCost = currentState.laborType === 'contracted' ? contractedCost : (hourlyRate * hoursNeeded);
-
-            // Daily overhead
-            const dailyLaborCost = daysNeeded * DAILY_OVERHEAD;
-            const totalCost = materialCost + laborCost + dailyLaborCost;
-
-            // Pricing tiers
-            const baselinePrice = totalCost / (1 - BASELINE_MARGIN);
-            const retailPrice = baselinePrice * (1 + RETAIL_MARKUP);
-            const dealerPrice = retailPrice * (1 - DEALER_DISCOUNT);
-
-            // Final price
-            const candidate = currentState.customerType === 'dealer' ? dealerPrice : retailPrice;
-            const floorAppliedPrice = Math.max(candidate, baselinePrice);
-            const rounded = roundUpTo(floorAppliedPrice, currentState.roundStep);
-
-            // Tax and deposit
-            const taxAmount = rounded * (taxPct / 100);
-            const totalWithTax = rounded + taxAmount;
-            const depositAmount = totalWithTax * (depositPct / 100);
-
-            // Margins
-            const margin = (sell) => (sell > 0 ? (sell - totalCost) / sell : 0);
-            const baselineMargin = margin(baselinePrice);
-            const roundedMargin = margin(rounded);
-
-            // Update display
-            updateDisplay({
-                materialCost,
-                laborCost,
-                dailyLaborCost,
-                totalCost,
-                baselinePrice,
-                rounded,
-                roundedMargin,
-                taxAmount,
-                totalWithTax,
-                depositAmount,
-                rollsNeeded,
-                daysNeeded,
-                taxPct,
-                depositPct
-            });
-        }
-
-        // Update display
-        function updateDisplay(results) {
-            document.getElementById('finalPrice').textContent = usd(results.rounded);
-            document.getElementById('marginDisplay').textContent = pct(results.roundedMargin) + ' margin';
-            document.getElementById('baselinePrice').textContent = usd(results.baselinePrice);
-            document.getElementById('materialsCost').textContent = usd(results.materialCost);
-            document.getElementById('laborCost').textContent = usd(results.laborCost);
-            document.getElementById('overheadCost').textContent = usd(results.dailyLaborCost);
-            document.getElementById('totalCost').textContent = usd(results.totalCost);
-
-            // Update labels
-            document.getElementById('materialsLabel').textContent = `Materials (${results.rollsNeeded} roll${results.rollsNeeded > 1 ? 's' : ''})`;
-            document.getElementById('overheadLabel').textContent = `Overhead (${results.daysNeeded} days)`;
-            document.getElementById('customerTypeLabel').textContent = currentState.customerType === 'dealer' ? 'Dealer Price' : 'Customer Price';
-
-            // Negotiation room
-            if (results.rounded > results.baselinePrice) {
-                document.getElementById('negotiationRoom').textContent = `Negotiation room: ${usd(results.rounded - results.baselinePrice)}`;
-            } else {
-                document.getElementById('negotiationRoom').textContent = '';
-            }
-
-            // Tax and deposit section
-            const taxDepositSection = document.getElementById('taxDepositSection');
-            const taxRow = document.getElementById('taxRow');
-            const totalWithTaxRow = document.getElementById('totalWithTaxRow');
-            const depositRow = document.getElementById('depositRow');
-
-            if (results.taxPct > 0 || results.depositPct > 0) {
-                taxDepositSection.style.display = 'block';
-                document.getElementById('subtotal').textContent = usd(results.rounded);
-
-                if (results.taxPct > 0) {
-                    taxRow.style.display = 'flex';
-                    totalWithTaxRow.style.display = 'flex';
-                    document.getElementById('taxLabel').textContent = `Tax (${results.taxPct}%)`;
-                    document.getElementById('taxAmount').textContent = usd(results.taxAmount);
-                    document.getElementById('totalWithTax').textContent = usd(results.totalWithTax);
-                } else {
-                    taxRow.style.display = 'none';
-                    totalWithTaxRow.style.display = 'none';
-                }
-
-                if (results.depositPct > 0) {
-                    depositRow.style.display = 'flex';
-                    document.getElementById('depositLabel').textContent = `Deposit (${results.depositPct}%)`;
-                    document.getElementById('depositAmount').textContent = usd(results.depositAmount);
-                } else {
-                    depositRow.style.display = 'none';
-                }
-            } else {
-                taxDepositSection.style.display = 'none';
-            }
-        }
-
-        // Event handlers
-        function setupEventHandlers() {
-            // Vehicle type change
-            document.getElementById('vehicleType').addEventListener('change', function() {
-                const vehicleType = this.value;
-                currentState.vehicleType = vehicleType;
-                
-                if (vehicleType !== 'custom') {
-                    const estimates = vehicleEstimates[vehicleType];
-                    // Don't auto-update rolls/days for vehicle type when service type is selected
-                    if (currentState.serviceType === 'custom-service') {
-                        document.getElementById('rollsNeeded').value = estimates.rolls;
-                        document.getElementById('daysNeeded').value = estimates.days;
-                    }
-                }
-                
-                calculateResults();
-            });
-
-            // Service type change
-            document.getElementById('serviceType').addEventListener('change', function() {
-                const serviceType = this.value;
-                currentState.serviceType = serviceType;
-                
-                if (serviceType !== 'custom-service') {
-                    const estimates = serviceEstimates[serviceType];
-                    document.getElementById('rollsNeeded').value = estimates.rolls;
-                    document.getElementById('daysNeeded').value = estimates.days;
-                }
-                
-                updateServiceInfo();
-                calculateResults();
-            });
-
-            // PPF type buttons
-            document.getElementById('glossBtn').addEventListener('click', function() {
-                currentState.ppfType = 'gloss';
-                document.getElementById('glossBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
-                document.getElementById('stealthBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
-                calculateResults();
-            });
-
-            document.getElementById('stealthBtn').addEventListener('click', function() {
-                currentState.ppfType = 'stealth';
-                document.getElementById('stealthBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
-                document.getElementById('glossBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
-                calculateResults();
-            });
-
-            // Labor type buttons
-            document.getElementById('contractedBtn').addEventListener('click', function() {
-                currentState.laborType = 'contracted';
-                document.getElementById('contractedBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
-                document.getElementById('hourlyBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
-                document.getElementById('contractedInput').classList.remove('hidden');
-                document.getElementById('hourlyInput').classList.add('hidden');
-                calculateResults();
-            });
-
-            document.getElementById('hourlyBtn').addEventListener('click', function() {
-                currentState.laborType = 'hourly';
-                document.getElementById('hourlyBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
-                document.getElementById('contractedBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
-                document.getElementById('hourlyInput').classList.remove('hidden');
-                document.getElementById('contractedInput').classList.add('hidden');
-                calculateResults();
-            });
-
-            // Customer type buttons
-            document.getElementById('customerBtn').addEventListener('click', function() {
-                currentState.customerType = 'customer';
-                document.getElementById('customerBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-green-600 text-white';
-                document.getElementById('dealerBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
-                calculateResults();
-            });
-
-            document.getElementById('dealerBtn').addEventListener('click', function() {
-                currentState.customerType = 'dealer';
-                document.getElementById('dealerBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-green-600 text-white';
-                document.getElementById('customerBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
-                calculateResults();
-            });
-
-            // Input changes
-            const inputs = ['rollsNeeded', 'daysNeeded', 'contractedCost', 'hourlyRate', 'hoursNeeded', 'roundStep', 'taxPct', 'depositPct'];
-            inputs.forEach(id => {
-                document.getElementById(id).addEventListener('input', calculateResults);
-            });
-
-            // Copy button
-            document.getElementById('copyBtn').addEventListener('click', async function() {
-                const quote = generateQuote();
-                try {
-                    await navigator.clipboard.writeText(quote);
-                    alert('Quote copied to clipboard!');
-                } catch {
-                    const ta = document.createElement('textarea');
-                    ta.value = quote;
-                    document.body.appendChild(ta);
-                    ta.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(ta);
-                    alert('Quote copied to clipboard!');
-                }
-            });
-
-            // Reset button
-            document.getElementById('resetBtn').addEventListener('click', function() {
-                document.getElementById('vehicleType').value = 'car';
-                document.getElementById('serviceType').value = 'full-front';
-                document.getElementById('rollsNeeded').value = 0.7;
-                document.getElementById('daysNeeded').value = 1.5;
-                document.getElementById('contractedCost').value = 2000;
-                document.getElementById('hourlyRate').value = 75;
-                document.getElementById('hoursNeeded').value = 26;
-                document.getElementById('taxPct').value = 0;
-                document.getElementById('depositPct').value = 50;
-                document.getElementById('roundStep').value = 50;
-                
-                // Reset buttons
-                currentState = {
-                    vehicleType: 'car',
-                    serviceType: 'full-front',
-                    ppfType: 'gloss',
-                    laborType: 'contracted',
-                    customerType: 'customer',
-                    roundStep: 50
-                };
-                
-                // Reset button styles
-                document.getElementById('glossBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
-                document.getElementById('stealthBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
-                document.getElementById('contractedBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
-                document.getElementById('hourlyBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
-                document.getElementById('customerBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-green-600 text-white';
-                document.getElementById('dealerBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
-                
-                document.getElementById('contractedInput').classList.remove('hidden');
-                document.getElementById('hourlyInput').classList.add('hidden');
-                
-                updateServiceInfo();
-                calculateResults();
-            });
-        }
-
-        // Generate quote
-        function generateQuote() {
-            const vehicleType = document.getElementById('vehicleType');
-            const serviceType = document.getElementById('serviceType');
-            const vehicleLabel = vehicleType.options[vehicleType.selectedIndex].text;
-            const serviceLabel = serviceType.options[serviceType.selectedIndex].text;
-            
-            return `Spectrum Outfitters — PPF Quote
---------------------------------
-Vehicle: ${vehicleLabel}
-Service: ${serviceLabel}
-PPF: ${currentState.ppfType === 'stealth' ? 'Stealth ($1,100/roll)' : 'Gloss ($800/roll)'}
-Customer Type: ${currentState.customerType === 'dealer' ? 'Dealer (15% off retail)' : 'Retail'}
-
-Costs
-  Materials: ${document.getElementById('materialsCost').textContent}
-  Labor: ${document.getElementById('laborCost').textContent}
-  Daily: ${document.getElementById('overheadCost').textContent}
-  Total Cost: ${document.getElementById('totalCost').textContent}
-
-Quoted
-  Final Price: ${document.getElementById('finalPrice').textContent}
-  Margin: ${document.getElementById('marginDisplay').textContent}
-
----
-spectrumoutfitters.com
-Professional PPF Installation Services`;
-        }
-
-        // Initialize
+        // Add click tracking for analytics (optional)
         document.addEventListener('DOMContentLoaded', function() {
-            setupEventHandlers();
-            updateServiceInfo();
-            calculateResults();
+            // Track tool clicks
+            const toolCards = document.querySelectorAll('.tool-card');
+            toolCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const toolName = this.querySelector('h3').textContent;
+                    console.log(`Tool clicked: ${toolName}`);
+                    // You can add analytics tracking here
+                });
+            });
         });
     </script>
 </body>
