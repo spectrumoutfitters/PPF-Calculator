@@ -17,9 +17,14 @@
 <body class="bg-gray-100 min-h-screen">
     <div class="max-w-6xl mx-auto p-6">
         <!-- Header -->
-        <div class="text-center mb-8">
+        <div class="text-center mb-8 relative">
             <h1 class="text-4xl font-bold text-gray-800 mb-2">🧮 Spectrum Outfitters PPF Pricing Calculator</h1>
             <p class="text-gray-600">Professional Paint Protection Film Pricing Tool with Service Types</p>
+            
+            <!-- Settings Button -->
+            <button id="settingsBtn" class="absolute top-0 right-0 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                ⚙️ Settings
+            </button>
         </div>
 
         <div class="grid lg:grid-cols-3 gap-6">
@@ -63,10 +68,11 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">PPF Type</label>
-                        <div class="flex gap-2">
-                            <button id="glossBtn" class="flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white">Gloss PPF ($800/roll)</button>
-                            <button id="stealthBtn" class="flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300">Stealth PPF ($1,100/roll)</button>
-                        </div>
+                        <select id="ppfTypeSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="gloss">Gloss PPF ($800/roll)</option>
+                            <option value="stealth">Stealth PPF ($1,100/roll)</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1" id="ppfDescription">Standard gloss finish</p>
                     </div>
 
                     <div>
@@ -124,13 +130,41 @@
                         </div>
                     </div>
 
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Sales Type</label>
+                        <div class="flex gap-2">
+                            <button id="inboundBtn" class="flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white">Inbound (3-5%)</button>
+                            <button id="outboundBtn" class="flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300">Outbound (6-8%)</button>
+                            <button id="directBtn" class="flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300">Direct (0%)</button>
+                        </div>
+                    </div>
+
+                    <div id="commissionInput" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Commission Rate</label>
+                        <select id="commissionRate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="0.03">3%</option>
+                            <option value="0.04">4%</option>
+                            <option value="0.05">5%</option>
+                            <option value="0.06">6%</option>
+                            <option value="0.07">7%</option>
+                            <option value="0.08">8%</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <input type="checkbox" id="dealerVolume" class="mr-2">
+                            Dealer Volume Job (Higher ticket, adjust margins)
+                        </label>
+                    </div>
+
                     <div class="grid grid-cols-3 gap-3">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Rounding</label>
                             <select id="roundStep" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="0">None</option>
+                                <option value="0" selected>None</option>
                                 <option value="25">$25 (up)</option>
-                                <option value="50" selected>$50 (up)</option>
+                                <option value="50">$50 (up)</option>
                                 <option value="100">$100 (up)</option>
                             </select>
                         </div>
@@ -140,7 +174,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Deposit %</label>
-                            <input type="number" id="depositPct" value="50" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <input type="number" id="depositPct" value="0" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                     </div>
                 </div>
@@ -163,7 +197,8 @@
                         <div class="flex justify-between items-center">
                             <div>
                                 <div class="text-sm font-medium text-red-800">Floor Price (Do Not Go Below)</div>
-                                <div class="text-xs text-red-600">30% minimum margin required</div>
+                                <div class="text-xs text-red-600" id="marginRequirement">30% minimum margin required</div>
+                                <div class="text-xs text-blue-600" id="dealerVolumeIndicator" style="display: none;">Dealer Volume: 25.5% margin floor</div>
                             </div>
                             <div class="text-xl font-bold text-red-800" id="baselinePrice">$0</div>
                         </div>
@@ -190,6 +225,41 @@
                                 <span>Total Cost</span>
                                 <span id="totalCost">$0</span>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Commission & Margin Breakdown (Internal Only) -->
+                    <div class="cost-breakdown bg-blue-50 border-blue-200">
+                        <div class="text-sm font-medium text-blue-800 mb-2">💰 Internal Breakdown</div>
+                        <div class="space-y-1 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Gross Profit</span>
+                                <span id="grossProfit">$0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Commission</span>
+                                <span id="commissionAmount">$0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Net Profit</span>
+                                <span id="netProfit">$0</span>
+                            </div>
+                            <div class="flex justify-between font-medium border-t pt-1">
+                                <span>Gross Margin</span>
+                                <span id="grossMargin">0.0%</span>
+                            </div>
+                            <div class="flex justify-between font-medium">
+                                <span>Net Margin (after commission)</span>
+                                <span id="netMargin">0.0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Margin Warnings -->
+                    <div id="marginWarning" class="hidden">
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                            <div class="text-sm font-medium text-yellow-800">⚠️ Margin Warning</div>
+                            <div class="text-xs text-yellow-700 mt-1" id="warningMessage"></div>
                         </div>
                     </div>
 
@@ -282,11 +352,102 @@
         </div>
     </div>
 
+    <!-- Settings Popup -->
+    <div id="settingsPopup" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-bold text-gray-800">PPF Calculator Settings</h3>
+                        <button id="closeSettings" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- PPF Materials Configuration -->
+                        <div>
+                            <h4 class="font-medium text-gray-800 mb-4">PPF Materials & Brands</h4>
+                            <div class="space-y-4">
+                                <div id="ppfMaterialsList">
+                                    <!-- PPF materials will be dynamically added here -->
+                                </div>
+                                <button id="addPpfMaterial" class="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                                    + Add New PPF Material
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Commission Settings -->
+                        <div>
+                            <h4 class="font-medium text-gray-800 mb-4">Commission & Pricing</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Default Commission Rate</label>
+                                    <select id="defaultCommissionRate" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                                        <option value="0.04">4% (Inbound)</option>
+                                        <option value="0.07">7% (Outbound)</option>
+                                        <option value="0">0% (Direct)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Default Rounding</label>
+                                    <select id="defaultRounding" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                                        <option value="0" selected>None</option>
+                                        <option value="25">$25</option>
+                                        <option value="50">$50</option>
+                                        <option value="100">$100</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex justify-between items-center">
+                        <div class="flex space-x-3">
+                            <button id="exportSettings" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                                📤 Export Settings
+                            </button>
+                            <button id="importSettings" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+                                📥 Import Settings
+                            </button>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button id="saveSettings" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Save Settings</button>
+                            <button id="cancelSettings" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Constants
         const BASELINE_MARGIN = 0.30;
         const RETAIL_MARKUP = 0.30;
         const DEALER_DISCOUNT = 0.15;
+
+        // PPF Materials Configuration
+        let ppfMaterials = [
+            { id: 'gloss', name: 'Gloss PPF', cost: 800, description: 'Standard gloss finish' },
+            { id: 'stealth', name: 'Stealth PPF', cost: 1100, description: 'Matte finish' }
+        ];
+
+        // Load settings from localStorage on startup
+        function loadSettingsFromStorage() {
+            const savedMaterials = localStorage.getItem('spectrumPpfMaterials');
+            if (savedMaterials) {
+                try {
+                    ppfMaterials = JSON.parse(savedMaterials);
+                } catch (e) {
+                    console.log('Using default PPF materials');
+                }
+            }
+        }
+
+        // Save settings to localStorage
+        function saveSettingsToStorage() {
+            localStorage.setItem('spectrumPpfMaterials', JSON.stringify(ppfMaterials));
+        }
         const DAILY_OVERHEAD = 300;
 
         // Vehicle estimates
@@ -340,7 +501,10 @@
             ppfType: 'gloss',
             laborType: 'contracted',
             customerType: 'customer',
-            roundStep: 50
+            roundStep: 0,
+            salesType: 'inbound',
+            commissionRate: 0.04,
+            dealerVolume: false
         };
 
         // Utility functions
@@ -357,6 +521,255 @@
         function roundUpTo(n, step) {
             if (!step || step <= 0) return Math.round(n);
             return Math.ceil(n / step) * step;
+        }
+
+        // Check margin warnings
+        function checkMarginWarnings(netMargin, grossProfit, commissionAmount) {
+            const warningDiv = document.getElementById('marginWarning');
+            const warningMessage = document.getElementById('warningMessage');
+            
+            // Hide warning by default
+            warningDiv.classList.add('hidden');
+            
+            // Determine effective margin floor based on dealer volume
+            const effectiveMarginFloor = currentState.dealerVolume && currentState.customerType === 'dealer' 
+                ? 0.255  // 30% * 0.85 = 25.5% for dealer volume jobs
+                : 0.30;  // Standard 30% floor
+            
+            // Check for warnings
+            if (netMargin < effectiveMarginFloor) {
+                warningDiv.classList.remove('hidden');
+                warningDiv.className = 'bg-red-50 border border-red-200 rounded-md p-3';
+                
+                if (netMargin < effectiveMarginFloor * 0.85) {
+                    warningMessage.innerHTML = `
+                        <strong>Critical:</strong> Net margin (${(netMargin * 100).toFixed(1)}%) is below ${(effectiveMarginFloor * 100).toFixed(1)}% floor!<br>
+                        <strong>Actions needed:</strong><br>
+                        • Increase labor rate by $${Math.ceil(commissionAmount / effectiveMarginFloor)}<br>
+                        • Add premium service options<br>
+                        • Bundle with additional services<br>
+                        • ${currentState.dealerVolume ? 'Consider standard dealer pricing (uncheck volume)' : 'Consider dealer volume pricing'}
+                    `;
+                } else {
+                    warningMessage.innerHTML = `
+                        <strong>Warning:</strong> Net margin (${(netMargin * 100).toFixed(1)}%) is close to ${(effectiveMarginFloor * 100).toFixed(1)}% floor<br>
+                        <strong>Consider:</strong> Increasing price or reducing costs
+                    `;
+                }
+            } else if (netMargin < (effectiveMarginFloor + 0.05)) {
+                warningDiv.classList.remove('hidden');
+                warningDiv.className = 'bg-yellow-50 border border-yellow-200 rounded-md p-3';
+                warningMessage.innerHTML = `
+                    <strong>Notice:</strong> Net margin (${(netMargin * 100).toFixed(1)}%) is above floor but below ${((effectiveMarginFloor + 0.05) * 100).toFixed(1)}%<br>
+                    <strong>Recommendation:</strong> Consider price optimization
+                `;
+            }
+        }
+
+        // Update commission input visibility and rates
+        function updateCommissionInput() {
+            const commissionInput = document.getElementById('commissionInput');
+            const commissionRate = document.getElementById('commissionRate');
+            
+            if (currentState.salesType === 'direct') {
+                commissionInput.classList.add('hidden');
+                currentState.commissionRate = 0;
+            } else {
+                commissionInput.classList.remove('hidden');
+                
+                // Set appropriate commission rates based on sales type
+                if (currentState.salesType === 'inbound') {
+                    // Filter to show only 3-5% options
+                    Array.from(commissionRate.options).forEach(option => {
+                        const rate = parseFloat(option.value);
+                        option.style.display = (rate >= 0.03 && rate <= 0.05) ? '' : 'none';
+                    });
+                    // Set default to 4% for inbound
+                    currentState.commissionRate = 0.04;
+                    commissionRate.value = '0.04';
+                } else if (currentState.salesType === 'outbound') {
+                    // Filter to show only 6-8% options
+                    Array.from(commissionRate.options).forEach(option => {
+                        const rate = parseFloat(option.value);
+                        option.style.display = (rate >= 0.06 && rate <= 0.08) ? '' : 'none';
+                    });
+                    // Set default to 7% for outbound
+                    currentState.commissionRate = 0.07;
+                    commissionRate.value = '0.07';
+                }
+            }
+        }
+
+        // Settings popup functions
+        function openSettings() {
+            document.getElementById('settingsPopup').classList.remove('hidden');
+            renderPpfMaterials();
+            loadSettingsToForm();
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsPopup').classList.add('hidden');
+        }
+
+        function renderPpfMaterials() {
+            const container = document.getElementById('ppfMaterialsList');
+            container.innerHTML = '';
+            
+            ppfMaterials.forEach((material, index) => {
+                const materialDiv = document.createElement('div');
+                materialDiv.className = 'border border-gray-300 rounded p-3 bg-gray-50';
+                materialDiv.innerHTML = `
+                    <div class="grid grid-cols-3 gap-2 mb-2">
+                        <input type="text" placeholder="Brand/Name" value="${material.name}" 
+                               class="px-2 py-1 border border-gray-300 rounded text-sm" 
+                               onchange="updatePpfMaterial(${index}, 'name', this.value)">
+                        <input type="number" placeholder="Cost per roll" value="${material.cost}" 
+                               class="px-2 py-1 border border-gray-300 rounded text-sm" 
+                               onchange="updatePpfMaterial(${index}, 'cost', this.value)">
+                        <button onclick="removePpfMaterial(${index})" 
+                                class="px-2 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600">
+                            Remove
+                        </button>
+                    </div>
+                    <input type="text" placeholder="Description" value="${material.description}" 
+                           class="w-full px-2 py-1 border border-gray-300 rounded text-sm" 
+                           onchange="updatePpfMaterial(${index}, 'description', this.value)">
+                `;
+                container.appendChild(materialDiv);
+            });
+        }
+
+        function updatePpfMaterial(index, field, value) {
+            if (field === 'cost') {
+                ppfMaterials[index][field] = parseFloat(value) || 0;
+            } else {
+                ppfMaterials[index][field] = value;
+            }
+            // Auto-save when materials are updated
+            saveSettingsToStorage();
+        }
+
+        function removePpfMaterial(index) {
+            if (ppfMaterials.length > 1) {
+                ppfMaterials.splice(index, 1);
+                renderPpfMaterials();
+                updatePpfTypeDropdown();
+                // Auto-save when materials are removed
+                saveSettingsToStorage();
+            }
+        }
+
+        function addPpfMaterial() {
+            const newMaterial = {
+                id: 'custom_' + Date.now(),
+                name: 'New PPF',
+                cost: 800,
+                description: 'Custom PPF material'
+            };
+            ppfMaterials.push(newMaterial);
+            renderPpfMaterials();
+            updatePpfTypeDropdown();
+            // Auto-save when materials are added
+            saveSettingsToStorage();
+        }
+
+        function updatePpfTypeDropdown() {
+            // Update the PPF type dropdown to reflect the current materials
+            const select = document.getElementById('ppfTypeSelect');
+            const description = document.getElementById('ppfDescription');
+            
+            // Store current selection
+            const currentValue = select.value;
+            
+            // Clear existing options
+            select.innerHTML = '';
+            
+            // Add new options based on configured materials
+            ppfMaterials.forEach((material, index) => {
+                const option = document.createElement('option');
+                option.value = material.id;
+                option.textContent = `${material.name} ($${material.cost}/roll)`;
+                select.appendChild(option);
+            });
+            
+            // Restore selection if possible, otherwise select first
+            if (ppfMaterials.find(m => m.id === currentValue)) {
+                select.value = currentValue;
+            } else if (ppfMaterials.length > 0) {
+                select.value = ppfMaterials[0].id;
+                currentState.ppfType = ppfMaterials[0].id;
+            }
+            
+            // Update description
+            const selectedMaterial = ppfMaterials.find(m => m.id === select.value);
+            if (selectedMaterial) {
+                description.textContent = selectedMaterial.description;
+            }
+        }
+
+        function saveSettings() {
+            // Save PPF materials and other settings
+            // For now, we'll just close the popup
+            // In a real app, you'd save to localStorage or a database
+            closeSettings();
+            updatePpfTypeDropdown();
+            calculateResults();
+        }
+
+        function loadSettingsToForm() {
+            // Load current settings into the form
+            document.getElementById('defaultCommissionRate').value = currentState.commissionRate;
+            document.getElementById('defaultRounding').value = currentState.roundStep;
+        }
+
+        // Export settings to JSON file
+        function exportSettings() {
+            const settings = {
+                ppfMaterials: ppfMaterials,
+                timestamp: new Date().toISOString(),
+                version: '1.0'
+            };
+            
+            const dataStr = JSON.stringify(settings, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `spectrum-ppf-settings-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+        }
+
+        // Import settings from JSON file
+        function importSettings() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const settings = JSON.parse(e.target.result);
+                            if (settings.ppfMaterials && Array.isArray(settings.ppfMaterials)) {
+                                ppfMaterials = settings.ppfMaterials;
+                                renderPpfMaterials();
+                                updatePpfTypeDropdown();
+                                saveSettingsToStorage();
+                                alert('Settings imported successfully!');
+                            } else {
+                                alert('Invalid settings file format');
+                            }
+                        } catch (error) {
+                            alert('Error reading settings file: ' + error.message);
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            
+            input.click();
         }
 
         // Update service info display
@@ -379,8 +792,9 @@
             const taxPct = parseFloat(document.getElementById('taxPct').value) || 0;
             const depositPct = parseFloat(document.getElementById('depositPct').value) || 0;
 
-            // Material cost
-            const materialCostPerRoll = currentState.ppfType === 'stealth' ? 1100 : 800;
+            // Material cost - use dynamic PPF materials
+            const selectedMaterial = ppfMaterials.find(m => m.id === currentState.ppfType) || ppfMaterials[0];
+            const materialCostPerRoll = selectedMaterial.cost;
             const materialCost = rollsNeeded * materialCostPerRoll;
 
             // Labor cost
@@ -390,8 +804,12 @@
             const dailyLaborCost = daysNeeded * DAILY_OVERHEAD;
             const totalCost = materialCost + laborCost + dailyLaborCost;
 
-            // Pricing tiers
-            const baselinePrice = totalCost / (1 - BASELINE_MARGIN);
+            // Pricing tiers with dealer volume adjustment
+            const effectiveMargin = currentState.dealerVolume && currentState.customerType === 'dealer' 
+                ? BASELINE_MARGIN * 0.85  // Allow 15% lower margin for dealer volume jobs
+                : BASELINE_MARGIN;
+            
+            const baselinePrice = totalCost / (1 - effectiveMargin);
             const retailPrice = baselinePrice * (1 + RETAIL_MARKUP);
             const dealerPrice = retailPrice * (1 - DEALER_DISCOUNT);
 
@@ -405,10 +823,19 @@
             const totalWithTax = rounded + taxAmount;
             const depositAmount = totalWithTax * (depositPct / 100);
 
+            // Commission and profit calculations
+            const grossProfit = rounded - totalCost;
+            const commissionAmount = grossProfit * currentState.commissionRate;
+            const netProfit = grossProfit - commissionAmount;
+            
             // Margins
             const margin = (sell) => (sell > 0 ? (sell - totalCost) / sell : 0);
             const baselineMargin = margin(baselinePrice);
             const roundedMargin = margin(rounded);
+            const netMargin = rounded > 0 ? netProfit / rounded : 0;
+
+            // Check margin warnings
+            checkMarginWarnings(netMargin, grossProfit, commissionAmount);
 
             // Update display
             updateDisplay({
@@ -419,6 +846,10 @@
                 baselinePrice,
                 rounded,
                 roundedMargin,
+                netMargin,
+                grossProfit,
+                commissionAmount,
+                netProfit,
                 taxAmount,
                 totalWithTax,
                 depositAmount,
@@ -438,11 +869,30 @@
             document.getElementById('laborCost').textContent = usd(results.laborCost);
             document.getElementById('overheadCost').textContent = usd(results.dailyLaborCost);
             document.getElementById('totalCost').textContent = usd(results.totalCost);
+            
+            // Commission breakdown
+            document.getElementById('grossProfit').textContent = usd(results.grossProfit);
+            document.getElementById('commissionAmount').textContent = usd(results.commissionAmount);
+            document.getElementById('netProfit').textContent = usd(results.netProfit);
+            document.getElementById('grossMargin').textContent = pct(results.roundedMargin);
+            document.getElementById('netMargin').textContent = pct(results.netMargin);
 
             // Update labels
             document.getElementById('materialsLabel').textContent = `Materials (${results.rollsNeeded} roll${results.rollsNeeded > 1 ? 's' : ''})`;
             document.getElementById('overheadLabel').textContent = `Overhead (${results.daysNeeded} days)`;
             document.getElementById('customerTypeLabel').textContent = currentState.customerType === 'dealer' ? 'Dealer Price' : 'Customer Price';
+            
+            // Update dealer volume indicator
+            const dealerVolumeIndicator = document.getElementById('dealerVolumeIndicator');
+            const marginRequirement = document.getElementById('marginRequirement');
+            
+            if (currentState.dealerVolume && currentState.customerType === 'dealer') {
+                dealerVolumeIndicator.style.display = 'block';
+                marginRequirement.textContent = '25.5% minimum margin required (Dealer Volume)';
+            } else {
+                dealerVolumeIndicator.style.display = 'none';
+                marginRequirement.textContent = '30% minimum margin required';
+            }
 
             // Negotiation room
             if (results.rounded > results.baselinePrice) {
@@ -518,20 +968,18 @@
                 calculateResults();
             });
 
-            // PPF type buttons
-            document.getElementById('glossBtn').addEventListener('click', function() {
-                currentState.ppfType = 'gloss';
-                document.getElementById('glossBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
-                document.getElementById('stealthBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+            // PPF type dropdown
+            document.getElementById('ppfTypeSelect').addEventListener('change', function() {
+                currentState.ppfType = this.value;
+                // Update description
+                const selectedMaterial = ppfMaterials.find(m => m.id === this.value);
+                if (selectedMaterial) {
+                    document.getElementById('ppfDescription').textContent = selectedMaterial.description;
+                }
                 calculateResults();
             });
 
-            document.getElementById('stealthBtn').addEventListener('click', function() {
-                currentState.ppfType = 'stealth';
-                document.getElementById('stealthBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
-                document.getElementById('glossBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
-                calculateResults();
-            });
+
 
             // Labor type buttons
             document.getElementById('contractedBtn').addEventListener('click', function() {
@@ -567,8 +1015,57 @@
                 calculateResults();
             });
 
+            // Sales type buttons
+            document.getElementById('inboundBtn').addEventListener('click', function() {
+                currentState.salesType = 'inbound';
+                document.getElementById('inboundBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
+                document.getElementById('outboundBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                document.getElementById('directBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                updateCommissionInput();
+                calculateResults();
+            });
+
+            document.getElementById('outboundBtn').addEventListener('click', function() {
+                currentState.salesType = 'outbound';
+                document.getElementById('outboundBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
+                document.getElementById('inboundBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                document.getElementById('directBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                updateCommissionInput();
+                calculateResults();
+            });
+
+            document.getElementById('directBtn').addEventListener('click', function() {
+                currentState.salesType = 'direct';
+                document.getElementById('directBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
+                document.getElementById('inboundBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                document.getElementById('outboundBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                updateCommissionInput();
+                calculateResults();
+            });
+
+            // Commission rate change
+            document.getElementById('commissionRate').addEventListener('change', function() {
+                currentState.commissionRate = parseFloat(this.value) || 0;
+                calculateResults();
+            });
+
+            // Dealer volume checkbox
+            document.getElementById('dealerVolume').addEventListener('change', function() {
+                currentState.dealerVolume = this.checked;
+                calculateResults();
+            });
+
+            // Settings popup
+            document.getElementById('settingsBtn').addEventListener('click', openSettings);
+            document.getElementById('closeSettings').addEventListener('click', closeSettings);
+            document.getElementById('cancelSettings').addEventListener('click', closeSettings);
+            document.getElementById('saveSettings').addEventListener('click', saveSettings);
+            document.getElementById('addPpfMaterial').addEventListener('click', addPpfMaterial);
+            document.getElementById('exportSettings').addEventListener('click', exportSettings);
+            document.getElementById('importSettings').addEventListener('click', importSettings);
+
             // Input changes
-            const inputs = ['rollsNeeded', 'daysNeeded', 'contractedCost', 'hourlyRate', 'hoursNeeded', 'roundStep', 'taxPct', 'depositPct'];
+            const inputs = ['rollsNeeded', 'daysNeeded', 'contractedCost', 'hourlyRate', 'hoursNeeded', 'roundStep', 'taxPct', 'depositPct', 'commissionRate'];
             inputs.forEach(id => {
                 document.getElementById(id).addEventListener('input', calculateResults);
             });
@@ -600,8 +1097,8 @@
                 document.getElementById('hourlyRate').value = 75;
                 document.getElementById('hoursNeeded').value = 26;
                 document.getElementById('taxPct').value = 0;
-                document.getElementById('depositPct').value = 50;
-                document.getElementById('roundStep').value = 50;
+                document.getElementById('depositPct').value = 0;
+                document.getElementById('roundStep').value = 0;
                 
                 // Reset buttons
                 currentState = {
@@ -610,7 +1107,10 @@
                     ppfType: 'gloss',
                     laborType: 'contracted',
                     customerType: 'customer',
-                    roundStep: 50
+                    roundStep: 0,
+                    salesType: 'inbound',
+                    commissionRate: 0.04,
+                    dealerVolume: false
                 };
                 
                 // Reset button styles
@@ -620,11 +1120,16 @@
                 document.getElementById('hourlyBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
                 document.getElementById('customerBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-green-600 text-white';
                 document.getElementById('dealerBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                document.getElementById('inboundBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
+                document.getElementById('outboundBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                document.getElementById('directBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
                 
                 document.getElementById('contractedInput').classList.remove('hidden');
                 document.getElementById('hourlyInput').classList.add('hidden');
+                document.getElementById('dealerVolume').checked = false;
                 
                 updateServiceInfo();
+                updateCommissionInput();
                 calculateResults();
             });
         }
@@ -660,8 +1165,11 @@ Professional PPF Installation Services`;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
+            loadSettingsFromStorage(); // Load saved settings first
             setupEventHandlers();
             updateServiceInfo();
+            updateCommissionInput();
+            updatePpfTypeDropdown();
             calculateResults();
         });
     </script>
