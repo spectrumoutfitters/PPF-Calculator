@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spectrum Outfitters PPF Pricing Calculator</title>
+    <meta name="description" content="Professional PPF pricing calculator for automotive paint protection film services">
+    <meta name="keywords" content="PPF, paint protection film, automotive, pricing calculator, spectrum outfitters">
+    <meta name="author" content="Spectrum Outfitters">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://your-domain.com/">
+    <meta property="og:title" content="Spectrum Outfitters PPF Pricing Calculator">
+    <meta property="og:description" content="Professional PPF pricing calculator for automotive paint protection film services">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://your-domain.com/">
+    <meta property="twitter:title" content="Spectrum Outfitters PPF Pricing Calculator">
+    <meta property="twitter:description" content="Professional PPF pricing calculator for automotive paint protection film services">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {}
+            }
+        }
+    </script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="https://cdn.tailwindcss.com" as="script">
+    <link rel="preload" href="https://unpkg.com/react@18/umd/react.production.min.js" as="script">
+    <link rel="preload" href="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" as="script">
+</head>
+<body class="bg-gray-100">
+    <div id="root">
+        <div style="padding: 40px; text-align: center; font-family: Arial, sans-serif;">
+            <h2>Loading PPF Calculator...</h2>
+            <p>Please wait while the calculator loads...</p>
+        </div>
+    </div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+        
+        // Simple icon replacements
+        const Calculator = () => "🧮";
+        const DollarSign = () => "$";
+        const Car = () => "🚗";
+        const Truck = () => "🚛";
+        const ClipboardCopy = () => "📋";
+        const RefreshCw = () => "🔄";
+
+        const BASELINE_MARGIN = 0.30;   // 30% margin floor
+        const RETAIL_MARKUP   = 0.30;   // +30% above baseline
+        const DEALER_DISCOUNT = 0.15;   // -15% off retail
+        const DAILY_OVERHEAD  = 300;    // $/day fixed overhead
+
+        const ROUNDS = [
+          { label: 'None', value: 0 },
+          { label: '$25 (up)', value: 25 },
+          { label: '$50 (up)', value: 50 },
+          { label: '$100 (up)', value: 100 },
+        ];
+
+        const usd = (n) => {
+          if (n === undefined || n === null || isNaN(n)) return '$0';
+          return n.toLocaleString(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+        };
+        const pct = (f) => {
+          if (!isFinite(f)) return '0.0%';
+          return `${(f * 100).toFixed(1)}%`;
+        };
+        const roundUpTo = (n, step) => {
+          if (!step || step <= 0) return Math.round(n);
+          return Math.ceil(n / step) * step;
+        };
+
+        const PricingCalculator = () => {
+          // Vehicle & materials
+          const [vehicleType, setVehicleType] = useState('car');
+          const [rollsNeeded, setRollsNeeded] = useState(1);
+          const [ppfType, setPpfType] = useState('gloss');
+
+          // Labor
+          const [laborType, setLaborType] = useState('contracted');
+          const [contractedCost, setContractedCost] = useState(2000);
+          const [hourlyRate, setHourlyRate] = useState(75);
+          const [hoursNeeded, setHoursNeeded] = useState(26);
+          const [daysNeeded, setDaysNeeded] = useState(7);
+
+          // Customer & quoting
+          const [customerType, setCustomerType] = useState('customer');
+          const [roundStep, setRoundStep] = useState(50);
+          const [taxPct, setTaxPct] = useState(0);
+          const [depositPct, setDepositPct] = useState(50);
+
+          // Auto-estimates for vehicle
+          const vehicleEstimates = useMemo(() => ({
+            car:    { rolls: 1, days: 5, label: 'Car/Sedan' },
+            coupe:  { rolls: 1, days: 4, label: 'Coupe/Sports Car' },
+            truck:  { rolls: 2, days: 7, label: 'Truck/Pickup' },
+            suv:    { rolls: 2, days: 6, label: 'SUV/Large Vehicle' },
+            van:    { rolls: 2, days: 8, label: 'Van/Commercial' },
+            custom: { rolls: rollsNeeded, days: daysNeeded, label: 'Custom' },
+          }), [rollsNeeded, daysNeeded]);
+
+          useEffect(() => {
+            if (vehicleType !== 'custom') {
+              setRollsNeeded(vehicleEstimates[vehicleType].rolls);
+              setDaysNeeded(vehicleEstimates[vehicleType].days);
+            }
+          }, [vehicleType, vehicleEstimates]);
+
+          // Core calculation (locked rules)
+          const results = useMemo(() => {
+            const materialCostPerRoll = ppfType === 'stealth' ? 1100 : 800;
+            const materialCost = Math.max(0, rollsNeeded) * materialCostPerRoll;
+
+            const laborCost = laborType === 'contracted'
+              ? Math.max(0, contractedCost)
+              : Math.max(0, hourlyRate) * Math.max(0, hoursNeeded);
+
+            const dailyLaborCost = Math.max(0, daysNeeded) * DAILY_OVERHEAD;
+            const totalCost = materialCost + laborCost + dailyLaborCost;
+
+            // Pricing tiers
+            const baselinePrice = totalCost / (1 - BASELINE_MARGIN);
+            const retailPrice   = baselinePrice * (1 + RETAIL_MARKUP);
+            const dealerPrice   = retailPrice * (1 - DEALER_DISCOUNT);
+
+            // Candidate per customer type
+            const candidate = customerType === 'dealer' ? dealerPrice : retailPrice;
+
+            // Enforce 30% margin floor (never below baseline)
+            const floorAppliedPrice = Math.max(candidate, baselinePrice);
+
+            // Rounding (UP to protect margin)
+            const rounded = roundStep ? roundUpTo(floorAppliedPrice, roundStep) : Math.round(floorAppliedPrice);
+
+            // Tax & deposit
+            const taxAmount = rounded * (Math.max(0, taxPct) / 100);
+            const totalWithTax = rounded + taxAmount;
+            const depositAmount = totalWithTax * (Math.max(0, Math.min(100, depositPct)) / 100);
+
+            // Margins
+            const margin = (sell) => (sell > 0 ? (sell - totalCost) / sell : 0);
+            const baselineMargin = margin(baselinePrice);
+            const retailMargin   = margin(retailPrice);
+            const dealerMargin   = margin(dealerPrice);
+            const actualMargin   = margin(floorAppliedPrice);
+            const roundedMargin  = margin(rounded);
+
+            // Headroom from retail down to baseline
+            const discountRoomFromRetail = retailPrice > 0 ? (retailPrice - baselinePrice) / retailPrice : 0;
+
+            return {
+              materialCostPerRoll, materialCost, laborCost, dailyLaborCost, totalCost,
+              baselinePrice, retailPrice, dealerPrice,
+              floorAppliedPrice, finalPriceRounded: rounded, roundStep,
+              taxPct, taxAmount, totalWithTax, depositPct, depositAmount,
+              baselineMargin, retailMargin, dealerMargin, actualMargin, roundedMargin,
+              customerType, ppfType, rollsNeeded, daysNeeded,
+              discountRoomFromRetail,
+              autoAdjustedUp: candidate < baselinePrice,
+            };
+          }, [
+            ppfType, rollsNeeded, laborType, contractedCost, hourlyRate, hoursNeeded,
+            daysNeeded, customerType, roundStep, taxPct, depositPct
+          ]);
+
+          // Copy a clean quote to clipboard
+          const handleCopy = async () => {
+            const lines = [
+              `Spectrum Outfitters — PPF Quote`,
+              `--------------------------------`,
+              `Vehicle: ${vehicleEstimates[vehicleType].label}`,
+              `PPF: ${ppfType === 'stealth' ? 'Stealth ($1,100/roll)' : 'Gloss ($800/roll)'}`,
+              `Customer Type: ${customerType === 'dealer' ? 'Dealer (15% off retail)' : 'Retail'}`,
+              ``,
+              `Costs`,
+              `  Materials: ${usd(results.materialCost)} (${rollsNeeded} × ${usd(results.materialCostPerRoll)})`,
+              `  Labor:     ${usd(results.laborCost)} (${laborType})`,
+              `  Daily:     ${usd(results.dailyLaborCost)} (${daysNeeded} × ${usd(DAILY_OVERHEAD)})`,
+              `  Total Cost: ${usd(results.totalCost)}`,
+              ``,
+              `Price Tiers (fixed rules)`,
+              `  Baseline (min allowed): ${usd(results.baselinePrice)}  [Margin: ${pct(results.baselineMargin)}]`,
+              `  Retail:                 ${usd(results.retailPrice)}    [Margin: ${pct(results.retailMargin)}]`,
+              `  Dealer:                 ${usd(results.dealerPrice)}    [Margin: ${pct(results.dealerMargin)}]`,
+              ``,
+              `Quoted`,
+              `  Final (floor applied): ${usd(results.floorAppliedPrice)}  ${results.autoAdjustedUp ? '(auto-bumped to meet 30% margin)' : ''}`,
+              `  Rounding: ${roundStep ? `Up to $${roundStep}` : 'None'}`,
+              `  Quoted Subtotal: ${usd(results.finalPriceRounded)}  [Margin: ${pct(results.roundedMargin)}]`,
+              `  Tax (${taxPct}%):      ${usd(results.taxAmount)}`,
+              `  Total w/ Tax:          ${usd(results.totalWithTax)}`,
+              `  Deposit (${depositPct}%): ${usd(results.depositAmount)}`,
+            ];
+            const text = lines.join('\n');
+
+            try {
+              await navigator.clipboard.writeText(text);
+              alert('Quote copied to clipboard!');
+            } catch {
+              const ta = document.createElement('textarea');
+              ta.value = text;
+              document.body.appendChild(ta);
+              ta.select();
+              document.execCommand('copy');
+              document.body.removeChild(ta);
+              alert('Quote copied to clipboard!');
+            }
+          };
+
+          const handleReset = () => {
+            setVehicleType('car');
+            setRollsNeeded(1);
+            setPpfType('gloss');
+            setLaborType('contracted');
+            setContractedCost(2000);
+            setHourlyRate(75);
+            setHoursNeeded(26);
+            setDaysNeeded(7);
+            setCustomerType('customer');
+            setRoundStep(50);
+            setTaxPct(0);
+            setDepositPct(50);
+          };
+
+          return (
+            <div className="max-w-5xl mx-auto p-6 bg-white rounded-lg shadow-lg">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <Calculator className="text-blue-600" size={32} />
+                  <h1 className="text-3xl font-bold text-gray-800">Spectrum Outfitters PPF Pricing Calculator</h1>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleCopy}
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
+                    title="Copy a client-ready quote"
+                  >
+                    <ClipboardCopy size={18} /> Copy Quote
+                  </button>
+                  <button
+                    onClick={handleReset}
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300"
+                    title="Reset to defaults"
+                  >
+                    <RefreshCw size={18} /> Reset
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid lg:grid-cols-3 gap-6">
+                {/* Vehicle & Materials */}
+                <div className="bg-gray-50 p-6 rounded-lg">
+                  <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                    <Car className="text-blue-600" size={20} />
+                    Vehicle & Materials
+                  </h2>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Vehicle Type</label>
+                      <select
+                        value={vehicleType}
+                        onChange={(e) => setVehicleType(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        {Object.entries(vehicleEstimates).map(([key, value]) => (
+                          <option key={key} value={key}>{value.label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">PPF Type</label>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setPpfType('gloss')}
+                          className={`flex-1 px-3 py-2 text-sm rounded ${ppfType === 'gloss' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                        >
+                          Gloss PPF ($800/roll)
+                        </button>
+                        <button
+                          onClick={() => setPpfType('stealth')}
+                          className={`flex-1 px-3 py-2 text-sm rounded ${ppfType === 'stealth' ? 'bg-gray-800 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                        >
+                          Stealth PPF ($1,100/roll)
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Rolls Needed</label>
+                      <input
+                        type="number"
+                        value={rollsNeeded}
+                        onChange={(e) => setRollsNeeded(Math.max(0, Number(e.target.value)))}
+                        disabled={vehicleType !== 'custom'}
+                        className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${vehicleType !== 'custom' ? 'bg-gray-200' : ''}`}
+                      />
+                      {vehicleType !== 'custom' && (
+                        <p className="text-xs text-gray-500 mt-1">Auto-estimated for {vehicleEstimates[vehicleType].label}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Days Needed</label>
+                      <input
+                        type="number"
+                        value={daysNeeded}
+                        onChange={(e) => setDaysNeeded(Math.max(0, Number(e.target.value)))}
+                        disabled={vehicleType !== 'custom'}
+                        className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${vehicleType !== 'custom' ? 'bg-gray-200' : ''}`}
+                      />
+                      {vehicleType !== 'custom' && (
+                        <p className="text-xs text-gray-500 mt-1">Auto-estimated for {vehicleEstimates[vehicleType].label}</p>
+                      )}
+                      <p className="text-xs text-gray-500 mt-1">Daily overhead: {usd(DAILY_OVERHEAD)} (fixed)</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Labor & Quoting Controls */}
+                <div className="bg-gray-50 p-6 rounded-lg">
+                  <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                    <DollarSign className="text-green-600" size={20} />
+                    Labor & Quoting
+                  </h2>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Labor Type</label>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setLaborType('contracted')}
+                          className={`flex-1 px-3 py-2 text-sm rounded ${laborType === 'contracted' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                        >
+                          Contracted
+                        </button>
+                        <button
+                          onClick={() => setLaborType('hourly')}
+                          className={`flex-1 px-3 py-2 text-sm rounded ${laborType === 'hourly' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                        >
+                          Hourly
+                        </button>
+                      </div>
+                    </div>
+
+                    {laborType === 'contracted' ? (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Contracted Cost</label>
+                        <input
+                          type="number"
+                          value={contractedCost}
+                          onChange={(e) => setContractedCost(Math.max(0, Number(e.target.value)))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Hourly Rate</label>
+                          <input
+                            type="number"
+                            value={hourlyRate}
+                            onChange={(e) => setHourlyRate(Math.max(0, Number(e.target.value)))}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Hours</label>
+                          <input
+                            type="number"
+                            value={hoursNeeded}
+                            onChange={(e) => setHoursNeeded(Math.max(0, Number(e.target.value)))}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Customer Type</label>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setCustomerType('customer')}
+                          className={`flex-1 px-3 py-2 text-sm rounded ${customerType === 'customer' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                        >
+                          Customer
+                        </button>
+                        <button
+                          onClick={() => setCustomerType('dealer')}
+                          className={`flex-1 px-3 py-2 text-sm rounded ${customerType === 'dealer' ? 'bg-orange-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                        >
+                          Dealer (-15%)
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Rounding</label>
+                        <select
+                          value={roundStep}
+                          onChange={(e) => setRoundStep(Number(e.target.value))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          {ROUNDS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Tax %</label>
+                        <input
+                          type="number"
+                          value={taxPct}
+                          onChange={(e) => setTaxPct(Math.max(0, Number(e.target.value)))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Deposit %</label>
+                        <input
+                          type="number"
+                          value={depositPct}
+                          onChange={(e) => setDepositPct(Math.max(0, Math.min(100, Number(e.target.value))))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Results */}
+                <div className="bg-blue-50 p-6 rounded-lg">
+                  <h2 className="text-xl font-semibold mb-4 text-blue-800">Quote Summary</h2>
+
+                  <div className="space-y-4">
+                    {/* Customer Price */}
+                    <div className="bg-green-100 rounded-lg p-4">
+                      <div className="text-center">
+                        <div className="text-sm text-green-700 mb-1">
+                          {customerType === 'dealer' ? 'Dealer Price' : 'Customer Price'}
+                        </div>
+                        <div className="text-3xl font-bold text-green-800">
+                          {usd(results.finalPriceRounded)}
+                        </div>
+                        <div className="text-xs text-green-600 mt-1">
+                          {pct(results.roundedMargin)} margin
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Floor Price */}
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <div className="text-sm font-medium text-red-800">Floor Price (Do Not Go Below)</div>
+                          <div className="text-xs text-red-600">30% minimum margin required</div>
+                        </div>
+                        <div className="text-xl font-bold text-red-800">
+                          {usd(results.baselinePrice)}
+                        </div>
+                      </div>
+                      {results.finalPriceRounded > results.baselinePrice && (
+                        <div className="mt-2 text-xs text-gray-600">
+                          Negotiation room: {usd(results.finalPriceRounded - results.baselinePrice)}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Cost Breakdown */}
+                    <div className="bg-white rounded-lg p-3 border">
+                      <div className="text-sm font-medium text-gray-700 mb-2">Cost Breakdown</div>
+                      <div className="space-y-1 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Materials ({rollsNeeded} rolls)</span>
+                          <span>{usd(results.materialCost)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Labor</span>
+                          <span>{usd(results.laborCost)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Overhead ({daysNeeded} days)</span>
+                          <span>{usd(results.dailyLaborCost)}</span>
+                        </div>
+                        <div className="flex justify-between font-medium border-t pt-1">
+                          <span>Total Cost</span>
+                          <span>{usd(results.totalCost)}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Tax & Deposit */}
+                    {(taxPct > 0 || depositPct > 0) && (
+                      <div className="bg-white rounded-lg p-3 border">
+                        <div className="space-y-1 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Subtotal</span>
+                            <span>{usd(results.finalPriceRounded)}</span>
+                          </div>
+                          {taxPct > 0 && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Tax ({taxPct}%)</span>
+                              <span>{usd(results.taxAmount)}</span>
+                            </div>
+                          )}
+                          {taxPct > 0 && (
+                            <div className="flex justify-between font-medium border-t pt-1">
+                              <span>Total with Tax</span>
+                              <span>{usd(results.totalWithTax)}</span>
+                            </div>
+                          )}
+                          {depositPct > 0 && (
+                            <div className="flex justify-between text-blue-600 font-medium">
+                              <span>Deposit ({depositPct}%)</span>
+                              <span>{usd(results.depositAmount)}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Auto-adjustment notice */}
+                    {results.autoAdjustedUp && (
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                        <div className="text-xs text-yellow-800">
+                          <strong>Note:</strong> Price adjusted to maintain 30% minimum margin
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Vehicle Guide */}
+              <div className="mt-6 bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <Truck className="text-gray-600" size={20} />
+                  Vehicle Estimates Guide
+                </h3>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3 text-sm">
+                  {Object.entries(vehicleEstimates).slice(0, -1).map(([key, value]) => (
+                    <div key={key} className="bg-white p-3 rounded border">
+                      <div className="font-medium text-gray-800">{value.label}</div>
+                      <div className="text-gray-600">{value.rolls} roll{value.rolls > 1 ? 's' : ''}</div>
+                      <div className="text-gray-600">{value.days} days</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-4 grid md:grid-cols-3 gap-4">
+                  <div className="p-3 bg-yellow-100 rounded border text-sm">
+                    <div className="font-medium text-yellow-800 mb-1">Baseline Example:</div>
+                    <div className="text-yellow-700">
+                      Cost {usd(results.totalCost)} → Baseline {usd(results.baselinePrice)} ({pct(results.baselineMargin)} margin)
+                    </div>
+                  </div>
+                  <div className="p-3 bg-green-100 rounded border text-sm">
+                    <div className="font-medium text-green-800 mb-1">Retail Example:</div>
+                    <div className="text-green-700">
+                      Baseline → Retail {usd(results.retailPrice)} ({pct(results.retailMargin)} margin)
+                    </div>
+                  </div>
+                  <div className="p-3 bg-orange-100 rounded border text-sm">
+                    <div className="font-medium text-orange-800 mb-1">Dealer Example:</div>
+                    <div className="text-orange-700">
+                      Retail → Dealer {usd(results.dealerPrice)} ({pct(results.dealerMargin)} margin)
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        // Mount the React component
+        try {
+            console.log('React version:', React.version);
+            console.log('ReactDOM version:', ReactDOM.version);
+            console.log('Root element:', document.getElementById('root'));
+            
+            // Try React 18 createRoot first, fallback to React 17 render
+            if (ReactDOM.createRoot) {
+                console.log('Using React 18 createRoot');
+                const root = ReactDOM.createRoot(document.getElementById('root'));
+                root.render(<PricingCalculator />);
+            } else {
+                console.log('Using React 17 render');
+                ReactDOM.render(<PricingCalculator />, document.getElementById('root'));
+            }
+        } catch (error) {
+            console.error('React mounting error:', error);
+            // Fallback: show error message
+            document.getElementById('root').innerHTML = `
+                <div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">
+                    <h2>Loading Error</h2>
+                    <p>There was an issue loading the calculator. Please refresh the page.</p>
+                    <p>Error: ${error.message}</p>
+                    <button onclick="location.reload()" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 5px; cursor: pointer;">Refresh Page</button>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
