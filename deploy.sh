@@ -88,7 +88,7 @@ case $choice in
         echo "Press Ctrl+C to stop the server"
         echo ""
         python3 -m 
-        http.server 8000
+    http.server 8000
         ;;
     *)
         echo "❌ Invalid option. Please choose 1-5."
