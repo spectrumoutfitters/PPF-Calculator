@@ -41,7 +41,12 @@
     <link rel="preload" href="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" as="script">
 </head>
 <body class="bg-gray-100">
-    <div id="root"></div>
+    <div id="root">
+        <div style="padding: 40px; text-align: center; font-family: Arial, sans-serif;">
+            <h2>Loading PPF Calculator...</h2>
+            <p>Please wait while the calculator loads...</p>
+        </div>
+    </div>
 
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
@@ -583,8 +588,32 @@
         };
 
         // Mount the React component
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<PricingCalculator />);
+        try {
+            console.log('React version:', React.version);
+            console.log('ReactDOM version:', ReactDOM.version);
+            console.log('Root element:', document.getElementById('root'));
+            
+            // Try React 18 createRoot first, fallback to React 17 render
+            if (ReactDOM.createRoot) {
+                console.log('Using React 18 createRoot');
+                const root = ReactDOM.createRoot(document.getElementById('root'));
+                root.render(<PricingCalculator />);
+            } else {
+                console.log('Using React 17 render');
+                ReactDOM.render(<PricingCalculator />, document.getElementById('root'));
+            }
+        } catch (error) {
+            console.error('React mounting error:', error);
+            // Fallback: show error message
+            document.getElementById('root').innerHTML = `
+                <div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">
+                    <h2>Loading Error</h2>
+                    <p>There was an issue loading the calculator. Please refresh the page.</p>
+                    <p>Error: ${error.message}</p>
+                    <button onclick="location.reload()" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 5px; cursor: pointer;">Refresh Page</button>
+                </div>
+            `;
+        }
     </script>
 </body>
 </html>
