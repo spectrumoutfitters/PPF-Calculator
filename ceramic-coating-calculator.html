@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ceramic Coating Calculator - Spectrum Outfitters</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .calculator-section { background-color: #f9fafb; padding: 1.5rem; border-radius: 0.5rem; }
+        .results-section { background-color: #eff6ff; padding: 1.5rem; border-radius: 0.5rem; }
+        .price-display { background-color: #dcfce7; padding: 1rem; border-radius: 0.5rem; text-align: center; }
+        .floor-price { background-color: #fef2f2; border: 1px solid #fecaca; padding: 0.75rem; border-radius: 0.5rem; }
+        .cost-breakdown { background-color: white; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; }
+        .correction-info { background-color: #f0f9ff; border: 1px solid #bae6fd; padding: 0.75rem; border-radius: 0.5rem; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="max-w-6xl mx-auto p-6">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">💎 Ceramic Coating Calculator</h1>
+            <p class="text-gray-600">Professional Ceramic Coating Pricing Tool with Paint Correction Stages</p>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-6">
+            <!-- Vehicle & Paint Condition -->
+            <div class="calculator-section">
+                <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                    🚗 Vehicle & Paint Condition
+                </h2>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Vehicle Type</label>
+                        <select id="vehicleType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="car">Car/Sedan</option>
+                            <option value="coupe">Coupe/Sports Car</option>
+                            <option value="truck">Truck/Pickup</option>
+                            <option value="suv">SUV/Large Vehicle</option>
+                            <option value="van">Van/Commercial</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Paint Condition</label>
+                        <select id="paintCondition" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="excellent">Excellent (No correction needed)</option>
+                            <option value="good">Good (1-stage correction)</option>
+                            <option value="fair">Fair (2-stage correction)</option>
+                            <option value="poor">Poor (3-stage correction)</option>
+                            <option value="very-poor">Very Poor (4-stage correction)</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Auto-adjusts correction time and materials</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Surface Type</label>
+                        <select id="surfaceType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="paint">Bare Paint</option>
+                            <option value="ppf">PPF Film</option>
+                            <option value="wrap">Vinyl Wrap</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Affects prep work and material usage</p>
+                    </div>
+
+                    <!-- Paint Correction Information Display -->
+                    <div class="correction-info" id="correctionInfo">
+                        <div class="text-sm font-medium text-blue-800 mb-1" id="correctionLabel">No Correction Needed</div>
+                        <div class="text-xs text-blue-600" id="correctionDescription">Paint is in excellent condition</div>
+                        <div class="text-xs text-blue-600 mt-1">Estimated: <span id="correctionEstimate">0 hours correction, 0 materials</span></div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Ceramic Coating Type</label>
+                        <div class="flex gap-2">
+                            <button id="standardBtn" class="flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white">Standard (9H)</button>
+                            <button id="premiumBtn" class="flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300">Premium (10H+)</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Coating Coverage (sq ft)</label>
+                        <input type="number" id="coatingCoverage" value="200" min="50" step="10" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">Standard sedan: ~200 sq ft, Large SUV: ~400 sq ft</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Labor & Materials -->
+            <div class="calculator-section">
+                <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                    💰 Labor & Materials
+                </h2>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Labor Type</label>
+                        <div class="flex gap-2">
+                            <button id="contractedBtn" class="flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white">Contracted</button>
+                            <button id="hourlyBtn" class="flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300">Hourly</button>
+                        </div>
+                    </div>
+
+                    <div id="contractedInput">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Contracted Cost</label>
+                        <input type="number" id="contractedCost" value="800" min="0" step="50" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">Total contracted labor cost</p>
+                    </div>
+
+                    <div id="hourlyInput" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Hourly Rate</label>
+                        <input type="number" id="hourlyRate" value="75" min="0" step="5" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">Per hour labor rate</p>
+                    </div>
+
+                    <div id="hourlyInput2" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Hours Needed</label>
+                        <input type="number" id="hoursNeeded" value="8" min="0" step="0.5" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">Total hours for the job</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Customer Type</label>
+                        <div class="flex gap-2">
+                            <button id="customerBtn" class="flex-1 px-3 py-2 text-sm rounded bg-green-600 text-white">Customer</button>
+                            <button id="dealerBtn" class="flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300">Dealer (-15%)</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tax %</label>
+                        <input type="number" id="taxPct" value="0" min="0" max="15" step="0.1" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">Local tax rate</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Deposit %</label>
+                        <input type="number" id="depositPct" value="50" min="0" max="100" step="5" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">Required deposit percentage</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results & Quote -->
+            <div class="results-section">
+                <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                    📊 Results & Quote
+                </h2>
+
+                <div class="space-y-4">
+                    <div class="price-display">
+                        <div class="text-sm text-gray-600 mb-1">Customer Price</div>
+                        <div class="text-3xl font-bold text-green-600" id="finalPrice">$0</div>
+                        <div class="text-sm text-gray-600" id="marginDisplay">0.0% margin</div>
+                    </div>
+
+                    <div class="floor-price">
+                        <div class="text-sm font-medium text-red-800 mb-1">Floor Price (Do Not Go Below)</div>
+                        <div class="text-sm text-red-600">30% minimum margin required</div>
+                        <div class="text-lg font-semibold text-red-800" id="floorPrice">$0</div>
+                    </div>
+
+                    <div class="cost-breakdown">
+                        <h3 class="font-medium text-gray-800 mb-2">Cost Breakdown</h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span>Paint Correction:</span>
+                                <span id="correctionCost">$0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Ceramic Coating:</span>
+                                <span id="coatingCost">$0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Labor:</span>
+                                <span id="laborCost">$0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Prep Materials:</span>
+                                <span id="prepCost">$0</span>
+                            </div>
+                            <div class="border-t pt-1 font-medium">
+                                <div class="flex justify-between">
+                                    <span>Total Cost:</span>
+                                    <span id="totalCost">$0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-3 rounded border">
+                        <div class="text-sm space-y-1">
+                            <div class="flex justify-between">
+                                <span>Subtotal:</span>
+                                <span id="subtotal">$0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Tax (<span id="taxDisplay">0%</span>):</span>
+                                <span id="taxAmount">$0</span>
+                            </div>
+                            <div class="flex justify-between font-medium">
+                                <span>Total with Tax:</span>
+                                <span id="totalWithTax">$0</span>
+                            </div>
+                            <div class="flex justify-between text-blue-600">
+                                <span>Deposit (<span id="depositDisplay">50%</span>):</span>
+                                <span id="depositAmount">$0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paint Correction Guide -->
+        <div class="mt-8 grid md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div class="bg-white p-4 rounded border">
+                <div class="font-medium text-green-800 mb-2">Excellent</div>
+                <div class="text-gray-600 mb-1">No correction needed</div>
+                <div class="text-gray-500">0 hours, $0 materials</div>
+            </div>
+            <div class="bg-white p-4 rounded border">
+                <div class="font-medium text-blue-800 mb-2">Good</div>
+                <div class="text-gray-600 mb-1">1-stage correction</div>
+                <div class="text-gray-500">2-3 hours, $25 materials</div>
+            </div>
+            <div class="bg-white p-4 rounded border">
+                <div class="font-medium text-yellow-800 mb-2">Fair</div>
+                <div class="text-gray-600 mb-1">2-stage correction</div>
+                <div class="text-gray-500">4-6 hours, $50 materials</div>
+            </div>
+            <div class="bg-white p-4 rounded border">
+                <div class="font-medium text-orange-800 mb-2">Poor</div>
+                <div class="text-gray-600 mb-1">3-stage correction</div>
+                <div class="text-gray-500">6-8 hours, $75 materials</div>
+            </div>
+            <div class="bg-white p-4 rounded border">
+                <div class="font-medium text-red-800 mb-2">Very Poor</div>
+                <div class="text-gray-600 mb-1">4-stage correction</div>
+                <div class="text-gray-500">8-12 hours, $100 materials</div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="mt-8 text-center space-x-4">
+            <button id="copyBtn" class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                📋 Copy Quote
+            </button>
+            <button id="resetBtn" class="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">
+                🔄 Reset
+            </button>
+        </div>
+
+        <!-- Back to Tools Button -->
+        <div class="mt-8 text-center">
+            <a href="/" class="inline-flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                <span>🔧</span>
+                <span>Back to All Tools</span>
+            </a>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-12 border-t border-gray-200 pt-8">
+            <div class="text-center">
+                <div class="flex items-center justify-center gap-3 mb-4">
+                    <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                        <span class="text-white font-bold text-sm">S</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800">Spectrum Outfitters</h3>
+                </div>
+                <p class="text-gray-600 mb-2">Professional Ceramic Coating Services</p>
+                <div class="text-sm text-gray-500 space-y-1">
+                    <p>Ceramic Coating • Paint Correction • Vehicle Protection</p>
+                    <p class="font-medium text-blue-600">spectrumoutfitters.com</p>
+                </div>
+                <div class="mt-4 text-xs text-gray-400">
+                    <p>© 2025 Spectrum Outfitters. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Constants
+        const BASELINE_MARGIN = 0.30;
+        const RETAIL_MARKUP = 0.30;
+        const DEALER_DISCOUNT = 0.15;
+        const STANDARD_COATING_COST = 2.50; // per sq ft
+        const PREMIUM_COATING_COST = 4.00; // per sq ft
+
+        // Vehicle estimates for coating coverage
+        const vehicleEstimates = {
+            car: { coverage: 200, label: 'Car/Sedan' },
+            coupe: { coverage: 180, label: 'Coupe/Sports Car' },
+            truck: { coverage: 350, label: 'Truck/Pickup' },
+            suv: { coverage: 400, label: 'SUV/Large Vehicle' },
+            van: { coverage: 450, label: 'Van/Commercial' },
+            custom: { coverage: 250, label: 'Custom' }
+        };
+
+        // Paint correction estimates
+        const correctionEstimates = {
+            'excellent': { 
+                hours: 0, 
+                materials: 0, 
+                label: 'No Correction Needed',
+                description: 'Paint is in excellent condition'
+            },
+            'good': { 
+                hours: 2.5, 
+                materials: 25, 
+                label: '1-Stage Correction',
+                description: 'Light swirls and minor imperfections'
+            },
+            'fair': { 
+                hours: 5, 
+                materials: 50, 
+                label: '2-Stage Correction',
+                description: 'Moderate swirls and scratches'
+            },
+            'poor': { 
+                hours: 7, 
+                materials: 75, 
+                label: '3-Stage Correction',
+                description: 'Heavy swirls and deep scratches'
+            },
+            'very-poor': { 
+                hours: 10, 
+                materials: 100, 
+                label: '4-Stage Correction',
+                description: 'Severe paint damage and oxidation'
+            }
+        };
+
+        // Surface type adjustments
+        const surfaceAdjustments = {
+            'paint': { prepMultiplier: 1.0, coatingMultiplier: 1.0 },
+            'ppf': { prepMultiplier: 0.8, coatingMultiplier: 1.2 },
+            'wrap': { prepMultiplier: 0.6, coatingMultiplier: 1.3 }
+        };
+
+        // State
+        let currentState = {
+            vehicleType: 'car',
+            paintCondition: 'excellent',
+            surfaceType: 'paint',
+            coatingType: 'standard',
+            laborType: 'contracted',
+            customerType: 'customer'
+        };
+
+        // Utility functions
+        function usd(n) {
+            if (n === undefined || n === null || isNaN(n)) return '$0';
+            return n.toLocaleString(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+        }
+
+        function pct(f) {
+            if (!isFinite(f)) return '0.0%';
+            return `${(f * 100).toFixed(1)}%`;
+        }
+
+        // Update correction info display
+        function updateCorrectionInfo() {
+            const paintCondition = currentState.paintCondition;
+            const estimates = correctionEstimates[paintCondition];
+            const surfaceType = currentState.surfaceType;
+            const adjustments = surfaceAdjustments[surfaceType];
+            
+            document.getElementById('correctionLabel').textContent = estimates.label;
+            document.getElementById('correctionDescription').textContent = estimates.description;
+            
+            const adjustedHours = estimates.hours * adjustments.prepMultiplier;
+            const adjustedMaterials = estimates.materials * adjustments.prepMultiplier;
+            
+            document.getElementById('correctionEstimate').textContent = 
+                `${adjustedHours.toFixed(1)} hours correction, $${adjustedMaterials} materials`;
+        }
+
+        // Calculate results
+        function calculateResults() {
+            const vehicleType = currentState.vehicleType;
+            const paintCondition = currentState.paintCondition;
+            const surfaceType = currentState.surfaceType;
+            const coatingType = currentState.coatingType;
+            const laborType = currentState.laborType;
+            const customerType = currentState.customerType;
+            
+            const coatingCoverage = parseFloat(document.getElementById('coatingCoverage').value) || 0;
+            const taxPct = parseFloat(document.getElementById('taxPct').value) || 0;
+            const depositPct = parseFloat(document.getElementById('depositPct').value) || 50;
+
+            // Get estimates
+            const vehicleEst = vehicleEstimates[vehicleType];
+            const correctionEst = correctionEstimates[paintCondition];
+            const surfaceAdj = surfaceAdjustments[surfaceType];
+
+            // Calculate costs
+            const correctionHours = correctionEst.hours * surfaceAdj.prepMultiplier;
+            const correctionMaterials = correctionEst.materials * surfaceAdj.prepMultiplier;
+            const correctionCost = correctionHours * 75; // $75/hour for correction
+
+            const coatingCostPerSqFt = coatingType === 'premium' ? PREMIUM_COATING_COST : STANDARD_COATING_COST;
+            const coatingCost = coatingCoverage * coatingCostPerSqFt * surfaceAdj.coatingMultiplier;
+
+            const prepCost = correctionMaterials + (correctionHours * 15); // $15/hour for prep materials
+
+            let laborCost = 0;
+            if (laborType === 'contracted') {
+                laborCost = parseFloat(document.getElementById('contractedCost').value) || 0;
+            } else {
+                const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 75;
+                const hoursNeeded = parseFloat(document.getElementById('hoursNeeded').value) || 8;
+                laborCost = hourlyRate * hoursNeeded;
+            }
+
+            const totalCost = correctionCost + coatingCost + laborCost + prepCost;
+
+            // Calculate pricing with 30% minimum margin
+            const minPrice = totalCost / (1 - BASELINE_MARGIN);
+            const retailPrice = minPrice * (1 + RETAIL_MARKUP);
+            const finalPrice = customerType === 'dealer' ? retailPrice * (1 - DEALER_DISCOUNT) : retailPrice;
+
+            // Calculate margin
+            const margin = (finalPrice - totalCost) / finalPrice;
+
+            // Calculate tax and deposit
+            const taxAmount = finalPrice * (taxPct / 100);
+            const totalWithTax = finalPrice + taxAmount;
+            const depositAmount = totalWithTax * (depositPct / 100);
+
+            // Update displays
+            document.getElementById('correctionCost').textContent = usd(correctionCost);
+            document.getElementById('coatingCost').textContent = usd(coatingCost);
+            document.getElementById('laborCost').textContent = usd(laborCost);
+            document.getElementById('prepCost').textContent = usd(prepCost);
+            document.getElementById('totalCost').textContent = usd(totalCost);
+            document.getElementById('subtotal').textContent = usd(finalPrice);
+            document.getElementById('taxDisplay').textContent = pct(taxPct / 100);
+            document.getElementById('taxAmount').textContent = usd(taxAmount);
+            document.getElementById('totalWithTax').textContent = usd(totalWithTax);
+            document.getElementById('depositDisplay').textContent = pct(depositPct / 100);
+            document.getElementById('depositAmount').textContent = usd(depositAmount);
+            document.getElementById('finalPrice').textContent = usd(finalPrice);
+            document.getElementById('marginDisplay').textContent = pct(margin);
+            document.getElementById('floorPrice').textContent = usd(minPrice);
+        }
+
+        // Setup event handlers
+        function setupEventHandlers() {
+            // Vehicle type change
+            document.getElementById('vehicleType').addEventListener('change', function() {
+                currentState.vehicleType = this.value;
+                const vehicleEst = vehicleEstimates[this.value];
+                document.getElementById('coatingCoverage').value = vehicleEst.coverage;
+                calculateResults();
+            });
+
+            // Paint condition change
+            document.getElementById('paintCondition').addEventListener('change', function() {
+                currentState.paintCondition = this.value;
+                updateCorrectionInfo();
+                calculateResults();
+            });
+
+            // Surface type change
+            document.getElementById('surfaceType').addEventListener('change', function() {
+                currentState.surfaceType = this.value;
+                updateCorrectionInfo();
+                calculateResults();
+            });
+
+            // Coating type buttons
+            document.getElementById('standardBtn').addEventListener('click', function() {
+                currentState.coatingType = 'standard';
+                document.getElementById('standardBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
+                document.getElementById('premiumBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                calculateResults();
+            });
+
+            document.getElementById('premiumBtn').addEventListener('click', function() {
+                currentState.coatingType = 'premium';
+                document.getElementById('premiumBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
+                document.getElementById('standardBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                calculateResults();
+            });
+
+            // Labor type buttons
+            document.getElementById('contractedBtn').addEventListener('click', function() {
+                currentState.laborType = 'contracted';
+                document.getElementById('contractedBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
+                document.getElementById('hourlyBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                document.getElementById('contractedInput').classList.remove('hidden');
+                document.getElementById('hourlyInput').classList.add('hidden');
+                document.getElementById('hourlyInput2').classList.add('hidden');
+                calculateResults();
+            });
+
+            document.getElementById('hourlyBtn').addEventListener('click', function() {
+                currentState.laborType = 'hourly';
+                document.getElementById('hourlyBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
+                document.getElementById('contractedBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                document.getElementById('hourlyInput').classList.remove('hidden');
+                document.getElementById('hourlyInput2').classList.remove('hidden');
+                document.getElementById('contractedInput').classList.add('hidden');
+                calculateResults();
+            });
+
+            // Customer type buttons
+            document.getElementById('customerBtn').addEventListener('click', function() {
+                currentState.customerType = 'customer';
+                document.getElementById('customerBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-green-600 text-white';
+                document.getElementById('dealerBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                calculateResults();
+            });
+
+            document.getElementById('dealerBtn').addEventListener('click', function() {
+                currentState.customerType = 'dealer';
+                document.getElementById('dealerBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-green-600 text-white';
+                document.getElementById('customerBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                calculateResults();
+            });
+
+            // Input changes
+            const inputs = ['coatingCoverage', 'contractedCost', 'hourlyRate', 'hoursNeeded', 'taxPct', 'depositPct'];
+            inputs.forEach(id => {
+                document.getElementById(id).addEventListener('input', calculateResults);
+            });
+
+            // Copy button
+            document.getElementById('copyBtn').addEventListener('click', async function() {
+                const quote = generateQuote();
+                try {
+                    await navigator.clipboard.writeText(quote);
+                    alert('Quote copied to clipboard!');
+                } catch {
+                    const ta = document.createElement('textarea');
+                    ta.value = quote;
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    alert('Quote copied to clipboard!');
+                }
+            });
+
+            // Reset button
+            document.getElementById('resetBtn').addEventListener('click', function() {
+                document.getElementById('vehicleType').value = 'car';
+                document.getElementById('paintCondition').value = 'excellent';
+                document.getElementById('surfaceType').value = 'paint';
+                document.getElementById('coatingCoverage').value = 200;
+                document.getElementById('contractedCost').value = 800;
+                document.getElementById('hourlyRate').value = 75;
+                document.getElementById('hoursNeeded').value = 8;
+                document.getElementById('taxPct').value = 0;
+                document.getElementById('depositPct').value = 50;
+                
+                // Reset buttons
+                currentState = {
+                    vehicleType: 'car',
+                    paintCondition: 'excellent',
+                    surfaceType: 'paint',
+                    coatingType: 'standard',
+                    laborType: 'contracted',
+                    customerType: 'customer'
+                };
+                
+                // Reset button styles
+                document.getElementById('standardBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
+                document.getElementById('premiumBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                document.getElementById('contractedBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
+                document.getElementById('hourlyBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                document.getElementById('customerBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-green-600 text-white';
+                document.getElementById('dealerBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                
+                document.getElementById('contractedInput').classList.remove('hidden');
+                document.getElementById('hourlyInput').classList.add('hidden');
+                document.getElementById('hourlyInput2').classList.add('hidden');
+                
+                updateCorrectionInfo();
+                calculateResults();
+            });
+        }
+
+        // Generate quote
+        function generateQuote() {
+            const vehicleType = document.getElementById('vehicleType');
+            const paintCondition = document.getElementById('paintCondition');
+            const surfaceType = document.getElementById('surfaceType');
+            const vehicleLabel = vehicleType.options[vehicleType.selectedIndex].text;
+            const paintLabel = paintCondition.options[paintCondition.selectedIndex].text;
+            const surfaceLabel = surfaceType.options[surfaceType.selectedIndex].text;
+            
+            return `Spectrum Outfitters — Ceramic Coating Quote
+--------------------------------
+Vehicle: ${vehicleLabel}
+Paint Condition: ${paintLabel}
+Surface: ${surfaceLabel}
+Coating: ${currentState.coatingType === 'premium' ? 'Premium (10H+)' : 'Standard (9H)'}
+Customer Type: ${currentState.customerType === 'dealer' ? 'Dealer (15% off retail)' : 'Retail'}
+
+Costs
+  Paint Correction: ${document.getElementById('correctionCost').textContent}
+  Ceramic Coating: ${document.getElementById('coatingCost').textContent}
+  Labor: ${document.getElementById('laborCost').textContent}
+  Prep Materials: ${document.getElementById('prepCost').textContent}
+  Total Cost: ${document.getElementById('totalCost').textContent}
+
+Quoted
+  Final Price: ${document.getElementById('finalPrice').textContent}
+  Margin: ${document.getElementById('marginDisplay').textContent}
+
+---
+spectrumoutfitters.com
+Professional Ceramic Coating Services`;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventHandlers();
+            updateCorrectionInfo();
+            calculateResults();
+        });
+    </script>
+</body>
+</html>
