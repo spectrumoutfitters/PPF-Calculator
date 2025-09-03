@@ -33,7 +33,7 @@
             max-width: 500px; 
             width: 90%;
         }
-    </style>
+</style>
 </head>
 <body class="bg-gray-100 min-h-screen">
     <div class="max-w-6xl mx-auto p-6">
@@ -131,6 +131,12 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Hourly Rate</label>
                         <input type="number" id="hourlyRate" value="75" min="0" step="5" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <p class="text-xs text-gray-500 mt-1">Per hour labor rate</p>
+                    </div>
+
+                    <div id="hourlyInput2" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Hours Needed</label>
+                        <input type="number" id="hoursNeeded" value="8" min="0" step="0.5" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">Total hours for the job</p>
                     </div>
 
                     <div>
@@ -425,6 +431,23 @@
             size7Year: 50
         };
 
+        // Coating type to settings key mapping
+        const coatingTypeMap = {
+            'three-year': '3Year',
+            'five-year': '5Year',
+            'seven-year': '7Year'
+        };
+
+        // Vehicle type to usage key mapping
+        const vehicleUsageMap = {
+            'car': 'usageCar',
+            'coupe': 'usageCoupe',
+            'truck': 'usageTruck',
+            'suv': 'usageSuv',
+            'van': 'usageVan',
+            'custom': 'usageCustom'
+        };
+
         // State
         let currentState = {
             vehicleType: 'car',
@@ -451,6 +474,7 @@
             const vehicleType = currentState.vehicleType;
             const paintCondition = currentState.paintCondition;
             const surfaceType = currentState.surfaceType;
+            const coatingType = currentState.coatingType;
             
             const vehicleEst = vehicleTimeEstimates[vehicleType];
             const correctionEst = correctionEstimates[paintCondition];
@@ -461,10 +485,12 @@
             const totalTime = baseTime + correctionTime;
             
             // Calculate bottle usage
-            const usageKey = `usage${vehicleType.charAt(0).toUpperCase() + vehicleType.slice(1)}`;
+            const usageKey = vehicleUsageMap[vehicleType];
             const usagePerCar = settings[usageKey];
-            const bottleSize = settings[`size${currentState.coatingType.split('-')[0]}Year`];
+            const bottleSize = settings[`size${coatingTypeMap[coatingType]}Year`];
             const bottlesPerCar = usagePerCar / bottleSize;
+            
+
             
             document.getElementById('totalTimeLabel').textContent = 'Total Estimated Time';
             document.getElementById('timeBreakdown').textContent = `${totalTime.toFixed(1)} hours total (${baseTime}h coating + ${correctionTime.toFixed(1)}h correction)`;
@@ -494,12 +520,14 @@
             const correctionCost = correctionHours * 75; // $75/hour for correction
 
             // Calculate coating materials cost
-            const usageKey = `usage${vehicleType.charAt(0).toUpperCase() + vehicleType.slice(1)}`;
+            const usageKey = vehicleUsageMap[vehicleType];
             const usagePerCar = settings[usageKey];
-            const bottleSize = settings[`size${coatingType.split('-')[0]}Year`];
+            const bottleSize = settings[`size${coatingTypeMap[coatingType]}Year`];
             const bottlesPerCar = usagePerCar / bottleSize;
-            const bottleCost = settings[`bottle${coatingType.split('-')[0]}Year`];
+            const bottleCost = settings[`bottle${coatingTypeMap[coatingType]}Year`];
             const coatingMaterialsCost = bottleCost * bottlesPerCar;
+            
+
 
             // Calculate coating labor cost (based on time)
             const baseTime = vehicleEst.baseTime;
@@ -516,7 +544,7 @@
                 laborCost = hourlyRate * hoursNeeded;
             }
 
-            const totalCost = correctionCost + coatingMaterialsCost + coatingLaborCost + laborCost + prepCost;
+            const totalCost = correctionCost + coatingMaterialsCost + laborCost + prepCost;
 
             // Calculate pricing with 30% minimum margin
             const minPrice = totalCost / (1 - BASELINE_MARGIN);
@@ -534,7 +562,6 @@
             // Update displays
             document.getElementById('correctionCost').textContent = usd(correctionCost);
             document.getElementById('coatingMaterialsCost').textContent = usd(coatingMaterialsCost);
-            document.getElementById('coatingLaborCost').textContent = usd(coatingLaborCost);
             document.getElementById('laborCost').textContent = usd(laborCost);
             document.getElementById('prepCost').textContent = usd(prepCost);
             document.getElementById('totalCost').textContent = usd(totalCost);
@@ -657,6 +684,7 @@
                 document.getElementById('hourlyBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
                 document.getElementById('contractedInput').classList.remove('hidden');
                 document.getElementById('hourlyInput').classList.add('hidden');
+                document.getElementById('hourlyInput2').classList.add('hidden');
                 calculateResults();
             });
 
@@ -770,7 +798,6 @@ Customer Type: ${currentState.customerType === 'dealer' ? 'Dealer (15% off retai
 Costs
   Paint Correction: ${document.getElementById('correctionCost').textContent}
   Coating Materials: ${document.getElementById('coatingMaterialsCost').textContent}
-  Coating Labor: ${document.getElementById('coatingLaborCost').textContent}
   Labor: ${document.getElementById('laborCost').textContent}
   Prep Materials: ${document.getElementById('prepCost').textContent}
   Total Cost: ${document.getElementById('totalCost').textContent}
