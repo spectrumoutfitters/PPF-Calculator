@@ -12,14 +12,40 @@
         .floor-price { background-color: #fef2f2; border: 1px solid #fecaca; padding: 0.75rem; border-radius: 0.5rem; }
         .cost-breakdown { background-color: white; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; }
         .correction-info { background-color: #f0f9ff; border: 1px solid #bae6fd; padding: 0.75rem; border-radius: 0.5rem; }
+        .settings-popup { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.5); 
+            display: none; 
+            z-index: 1000;
+        }
+        .settings-content { 
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            background: white; 
+            padding: 2rem; 
+            border-radius: 1rem; 
+            max-width: 500px; 
+            width: 90%;
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
     <div class="max-w-6xl mx-auto p-6">
-        <!-- Header -->
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-800 mb-2">💎 Ceramic Coating Calculator</h1>
-            <p class="text-gray-600">Professional Ceramic Coating Pricing Tool with Paint Correction Stages</p>
+        <!-- Header with Settings Button -->
+        <div class="flex justify-between items-center mb-8">
+            <div class="text-center flex-1">
+                <h1 class="text-4xl font-bold text-gray-800 mb-2">💎 Ceramic Coating Calculator</h1>
+                <p class="text-gray-600">Professional Ceramic Coating Pricing Tool</p>
+            </div>
+            <button id="settingsBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                ⚙️ Settings
+            </button>
         </div>
 
         <div class="grid lg:grid-cols-3 gap-6">
@@ -51,7 +77,6 @@
                             <option value="poor">Poor (3-stage correction)</option>
                             <option value="very-poor">Very Poor (4-stage correction)</option>
                         </select>
-                        <p class="text-xs text-gray-500 mt-1">Auto-adjusts correction time and materials</p>
                     </div>
 
                     <div>
@@ -61,74 +86,30 @@
                             <option value="ppf">PPF Film</option>
                             <option value="wrap">Vinyl Wrap</option>
                         </select>
-                        <p class="text-xs text-gray-500 mt-1">Affects prep work and material usage</p>
-                    </div>
-
-                    <!-- Paint Correction Information Display -->
-                    <div class="correction-info" id="correctionInfo">
-                        <div class="text-sm font-medium text-blue-800 mb-1" id="correctionLabel">No Correction Needed</div>
-                        <div class="text-xs text-blue-600" id="correctionDescription">Paint is in excellent condition</div>
-                        <div class="text-xs text-blue-600 mt-1">Estimated: <span id="correctionEstimate">0 hours correction, 0 materials</span></div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Ceramic Coating Type</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Coating Package</label>
                         <div class="flex gap-2">
-                            <button id="standardBtn" class="flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white">3-Year Coating</button>
-                            <button id="premiumBtn" class="flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300">5-Year Coating</button>
+                            <button id="threeYearBtn" class="flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white">3-Year</button>
+                            <button id="fiveYearBtn" class="flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300">5-Year</button>
+                            <button id="sevenYearBtn" class="flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300">7-9 Year</button>
                         </div>
                     </div>
 
-                    <!-- Coating Pricing Settings -->
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <h4 class="text-sm font-medium text-blue-800 mb-3">Coating Pricing Settings</h4>
-                        <div class="grid grid-cols-2 gap-3 text-xs">
-                            <div>
-                                <label class="block text-blue-700 mb-1">3-Year Coating ($/sq ft)</label>
-                                <input type="number" id="coating3YearPrice" value="2.50" min="0" step="0.10" class="w-full px-2 py-1 border border-blue-300 rounded text-xs">
-                            </div>
-                            <div>
-                                <label class="block text-blue-700 mb-1">5-Year Coating ($/sq ft)</label>
-                                <input type="number" id="coating5YearPrice" value="4.00" min="0" step="0.10" class="w-full px-2 py-1 border border-blue-300 rounded text-xs">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Bottle Usage Settings -->
-                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                        <h4 class="text-sm font-medium text-green-800 mb-3">Bottle Usage Settings</h4>
-                        <div class="grid grid-cols-2 gap-3 text-xs">
-                            <div>
-                                <label class="block text-green-700 mb-1">Bottle Cost ($)</label>
-                                <input type="number" id="bottleCost" value="85" min="0" step="5" class="w-full px-2 py-1 border border-green-300 rounded text-xs">
-                            </div>
-                            <div>
-                                <label class="block text-green-700 mb-1">Bottle Size (ml)</label>
-                                <input type="number" id="bottleSize" value="50" min="10" step="5" class="w-full px-2 py-1 border border-green-300 rounded text-xs">
-                            </div>
-                            <div>
-                                <label class="block text-green-700 mb-1">Usage per Car (ml)</label>
-                                <input type="number" id="usagePerCar" value="15" min="5" step="1" class="w-full px-2 py-1 border border-green-300 rounded text-xs">
-                            </div>
-                            <div>
-                                <label class="block text-green-700 mb-1">Bottles per Car</label>
-                                <div class="text-green-700 font-medium" id="bottlesPerCar">0.3</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Coating Coverage (sq ft)</label>
-                        <input type="number" id="coatingCoverage" value="200" min="50" step="10" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <p class="text-xs text-gray-500 mt-1">Standard sedan: ~200 sq ft, Large SUV: ~400 sq ft</p>
+                    <!-- Time Estimates Display -->
+                    <div class="correction-info" id="timeEstimates">
+                        <div class="text-sm font-medium text-blue-800 mb-1" id="totalTimeLabel">Total Estimated Time</div>
+                        <div class="text-xs text-blue-600" id="timeBreakdown">0 hours total</div>
+                        <div class="text-xs text-blue-600 mt-1">Bottle Usage: <span id="bottleUsage">0 bottles</span></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Labor & Materials -->
+            <!-- Labor & Pricing -->
             <div class="calculator-section">
                 <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
-                    💰 Labor & Materials
+                    💰 Labor & Pricing
                 </h2>
 
                 <div class="space-y-4">
@@ -150,12 +131,6 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Hourly Rate</label>
                         <input type="number" id="hourlyRate" value="75" min="0" step="5" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <p class="text-xs text-gray-500 mt-1">Per hour labor rate</p>
-                    </div>
-
-                    <div id="hourlyInput2" class="hidden">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Hours Needed</label>
-                        <input type="number" id="hoursNeeded" value="8" min="0" step="0.5" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <p class="text-xs text-gray-500 mt-1">Total hours for the job</p>
                     </div>
 
                     <div>
@@ -211,8 +186,8 @@
                                 <span id="coatingMaterialsCost">$0</span>
                             </div>
                             <div class="flex justify-between">
-                                <span>Coating Labor:</span>
-                                <span id="coatingLaborCost">$0</span>
+                                <span>Labor:</span>
+                                <span id="laborCost">$0</span>
                             </div>
                             <div class="flex justify-between">
                                 <span>Prep Materials:</span>
@@ -319,54 +294,112 @@
         </div>
     </div>
 
+    <!-- Settings Popup -->
+    <div id="settingsPopup" class="settings-popup">
+        <div class="settings-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold">Ceramic Coating Settings</h3>
+                <button id="closeSettings" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <h4 class="font-medium text-gray-800 mb-2">Coating Package Pricing</h4>
+                    <div class="grid grid-cols-1 gap-3">
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">3-Year Coating - Bottle Cost</label>
+                            <input type="number" id="bottle3Year" value="85" min="0" step="5" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">5-Year Coating - Bottle Cost</label>
+                            <input type="number" id="bottle5Year" value="120" min="0" step="5" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">7-9 Year Coating - Bottle Cost</label>
+                            <input type="number" id="bottle7Year" value="180" min="0" step="5" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-medium text-gray-800 mb-2">Vehicle Bottle Usage (ml per vehicle)</h4>
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                            <label class="block text-gray-600 mb-1">Car/Sedan</label>
+                            <input type="number" id="usageCar" value="15" min="5" step="1" class="w-full px-2 py-1 border border-gray-300 rounded">
+                        </div>
+                        <div>
+                            <label class="block text-gray-600 mb-1">Coupe/Sports</label>
+                            <input type="number" id="usageCoupe" value="18" min="5" step="1" class="w-full px-2 py-1 border border-gray-300 rounded">
+                        </div>
+                        <div>
+                            <label class="block text-gray-600 mb-1">Truck/Pickup</label>
+                            <input type="number" id="usageTruck" value="25" min="5" step="1" class="w-full px-2 py-1 border border-gray-300 rounded">
+                        </div>
+                        <div>
+                            <label class="block text-gray-600 mb-1">SUV/Large</label>
+                            <input type="number" id="usageSuv" value="28" min="5" step="1" class="w-full px-2 py-1 border border-gray-300 rounded">
+                        </div>
+                        <div>
+                            <label class="block text-gray-600 mb-1">Van/Commercial</label>
+                            <input type="number" id="usageVan" value="32" min="5" step="1" class="w-full px-2 py-1 border border-gray-300 rounded">
+                        </div>
+                        <div>
+                            <label class="block text-gray-600 mb-1">Custom</label>
+                            <input type="number" id="usageCustom" value="20" min="5" step="1" class="w-full px-2 py-1 border border-gray-300 rounded">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-medium text-gray-800 mb-2">Bottle Sizes (ml)</h4>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">3-Year</label>
+                            <input type="number" id="size3Year" value="50" min="10" step="5" class="w-full px-2 py-1 border border-gray-300 rounded">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">5-Year</label>
+                            <input type="number" id="size5Year" value="50" min="10" step="5" class="w-full px-2 py-1 border border-gray-300 rounded">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">7-9 Year</label>
+                            <input type="number" id="size7Year" value="50" min="10" step="5" class="w-full px-2 py-1 border border-gray-300 rounded">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end space-x-3">
+                <button id="saveSettings" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Save Settings</button>
+                <button id="cancelSettings" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Constants
         const BASELINE_MARGIN = 0.30;
         const RETAIL_MARKUP = 0.30;
         const DEALER_DISCOUNT = 0.15;
 
-        // Vehicle estimates for coating coverage
-        const vehicleEstimates = {
-            car: { coverage: 200, label: 'Car/Sedan' },
-            coupe: { coverage: 180, label: 'Coupe/Sports Car' },
-            truck: { coverage: 350, label: 'Truck/Pickup' },
-            suv: { coverage: 400, label: 'SUV/Large Vehicle' },
-            van: { coverage: 450, label: 'Van/Commercial' },
-            custom: { coverage: 250, label: 'Custom' }
+        // Vehicle time estimates (base coating time + correction time)
+        const vehicleTimeEstimates = {
+            car: { baseTime: 4, label: 'Car/Sedan' },
+            coupe: { baseTime: 4.5, label: 'Coupe/Sports Car' },
+            truck: { baseTime: 6, label: 'Truck/Pickup' },
+            suv: { baseTime: 6.5, label: 'SUV/Large Vehicle' },
+            van: { baseTime: 7, label: 'Van/Commercial' },
+            custom: { baseTime: 5, label: 'Custom' }
         };
 
         // Paint correction estimates
         const correctionEstimates = {
-            'excellent': { 
-                hours: 0, 
-                materials: 0, 
-                label: 'No Correction Needed',
-                description: 'Paint is in excellent condition'
-            },
-            'good': { 
-                hours: 2.5, 
-                materials: 25, 
-                label: '1-Stage Correction',
-                description: 'Light swirls and minor imperfections'
-            },
-            'fair': { 
-                hours: 5, 
-                materials: 50, 
-                label: '2-Stage Correction',
-                description: 'Moderate swirls and scratches'
-            },
-            'poor': { 
-                hours: 7, 
-                materials: 75, 
-                label: '3-Stage Correction',
-                description: 'Heavy swirls and deep scratches'
-            },
-            'very-poor': { 
-                hours: 10, 
-                materials: 100, 
-                label: '4-Stage Correction',
-                description: 'Severe paint damage and oxidation'
-            }
+            'excellent': { hours: 0, materials: 0, label: 'No Correction Needed' },
+            'good': { hours: 2.5, materials: 25, label: '1-Stage Correction' },
+            'fair': { hours: 5, materials: 50, label: '2-Stage Correction' },
+            'poor': { hours: 7, materials: 75, label: '3-Stage Correction' },
+            'very-poor': { hours: 10, materials: 100, label: '4-Stage Correction' }
         };
 
         // Surface type adjustments
@@ -376,12 +409,28 @@
             'wrap': { prepMultiplier: 0.6, coatingMultiplier: 1.3 }
         };
 
+        // Default settings (industry standard)
+        let settings = {
+            bottle3Year: 85,
+            bottle5Year: 120,
+            bottle7Year: 180,
+            usageCar: 15,
+            usageCoupe: 18,
+            usageTruck: 25,
+            usageSuv: 28,
+            usageVan: 32,
+            usageCustom: 20,
+            size3Year: 50,
+            size5Year: 50,
+            size7Year: 50
+        };
+
         // State
         let currentState = {
             vehicleType: 'car',
             paintCondition: 'excellent',
             surfaceType: 'paint',
-            coatingType: 'standard',
+            coatingType: 'three-year',
             laborType: 'contracted',
             customerType: 'customer'
         };
@@ -397,29 +446,29 @@
             return `${(f * 100).toFixed(1)}%`;
         }
 
-        // Update correction info display
-        function updateCorrectionInfo() {
+        // Update time estimates display
+        function updateTimeEstimates() {
+            const vehicleType = currentState.vehicleType;
             const paintCondition = currentState.paintCondition;
-            const estimates = correctionEstimates[paintCondition];
             const surfaceType = currentState.surfaceType;
-            const adjustments = surfaceAdjustments[surfaceType];
             
-            document.getElementById('correctionLabel').textContent = estimates.label;
-            document.getElementById('correctionDescription').textContent = estimates.description;
+            const vehicleEst = vehicleTimeEstimates[vehicleType];
+            const correctionEst = correctionEstimates[paintCondition];
+            const surfaceAdj = surfaceAdjustments[surfaceType];
             
-            const adjustedHours = estimates.hours * adjustments.prepMultiplier;
-            const adjustedMaterials = estimates.materials * adjustments.prepMultiplier;
+            const baseTime = vehicleEst.baseTime;
+            const correctionTime = correctionEst.hours * surfaceAdj.prepMultiplier;
+            const totalTime = baseTime + correctionTime;
             
-            document.getElementById('correctionEstimate').textContent = 
-                `${adjustedHours.toFixed(1)} hours correction, $${adjustedMaterials} materials`;
-        }
-
-        // Update bottles per car calculation
-        function updateBottlesPerCar() {
-            const bottleSize = parseFloat(document.getElementById('bottleSize').value) || 50;
-            const usagePerCar = parseFloat(document.getElementById('usagePerCar').value) || 15;
+            // Calculate bottle usage
+            const usageKey = `usage${vehicleType.charAt(0).toUpperCase() + vehicleType.slice(1)}`;
+            const usagePerCar = settings[usageKey];
+            const bottleSize = settings[`size${currentState.coatingType.split('-')[0]}Year`];
             const bottlesPerCar = usagePerCar / bottleSize;
-            document.getElementById('bottlesPerCar').textContent = bottlesPerCar.toFixed(1);
+            
+            document.getElementById('totalTimeLabel').textContent = 'Total Estimated Time';
+            document.getElementById('timeBreakdown').textContent = `${totalTime.toFixed(1)} hours total (${baseTime}h coating + ${correctionTime.toFixed(1)}h correction)`;
+            document.getElementById('bottleUsage').textContent = `${bottlesPerCar.toFixed(1)} bottles`;
         }
 
         // Calculate results
@@ -431,12 +480,11 @@
             const laborType = currentState.laborType;
             const customerType = currentState.customerType;
             
-            const coatingCoverage = parseFloat(document.getElementById('coatingCoverage').value) || 0;
             const taxPct = parseFloat(document.getElementById('taxPct').value) || 0;
             const depositPct = parseFloat(document.getElementById('depositPct').value) || 50;
 
             // Get estimates
-            const vehicleEst = vehicleEstimates[vehicleType];
+            const vehicleEst = vehicleTimeEstimates[vehicleType];
             const correctionEst = correctionEstimates[paintCondition];
             const surfaceAdj = surfaceAdjustments[surfaceType];
 
@@ -445,22 +493,17 @@
             const correctionMaterials = correctionEst.materials * surfaceAdj.prepMultiplier;
             const correctionCost = correctionHours * 75; // $75/hour for correction
 
-            // Get coating pricing from inputs
-            const coating3YearPrice = parseFloat(document.getElementById('coating3YearPrice').value) || 2.50;
-            const coating5YearPrice = parseFloat(document.getElementById('coating5YearPrice').value) || 4.00;
-            const coatingCostPerSqFt = coatingType === 'premium' ? coating5YearPrice : coating3YearPrice;
-            
-            // Calculate coating materials cost (bottle usage)
-            const bottleCost = parseFloat(document.getElementById('bottleCost').value) || 85;
-            const bottleSize = parseFloat(document.getElementById('bottleSize').value) || 50;
-            const usagePerCar = parseFloat(document.getElementById('usagePerCar').value) || 15;
+            // Calculate coating materials cost
+            const usageKey = `usage${vehicleType.charAt(0).toUpperCase() + vehicleType.slice(1)}`;
+            const usagePerCar = settings[usageKey];
+            const bottleSize = settings[`size${coatingType.split('-')[0]}Year`];
             const bottlesPerCar = usagePerCar / bottleSize;
-            
-            // Update bottles per car display
-            document.getElementById('bottlesPerCar').textContent = bottlesPerCar.toFixed(1);
-            
+            const bottleCost = settings[`bottle${coatingType.split('-')[0]}Year`];
             const coatingMaterialsCost = bottleCost * bottlesPerCar;
-            const coatingLaborCost = coatingCoverage * coatingCostPerSqFt * surfaceAdj.coatingMultiplier;
+
+            // Calculate coating labor cost (based on time)
+            const baseTime = vehicleEst.baseTime;
+            const coatingLaborCost = baseTime * 75; // $75/hour for coating
 
             const prepCost = correctionMaterials + (correctionHours * 15); // $15/hour for prep materials
 
@@ -506,42 +549,104 @@
             document.getElementById('floorPrice').textContent = usd(minPrice);
         }
 
+        // Settings popup functions
+        function openSettings() {
+            document.getElementById('settingsPopup').style.display = 'block';
+            loadSettingsToForm();
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsPopup').style.display = 'none';
+        }
+
+        function loadSettingsToForm() {
+            document.getElementById('bottle3Year').value = settings.bottle3Year;
+            document.getElementById('bottle5Year').value = settings.bottle5Year;
+            document.getElementById('bottle7Year').value = settings.bottle7Year;
+            document.getElementById('usageCar').value = settings.usageCar;
+            document.getElementById('usageCoupe').value = settings.usageCoupe;
+            document.getElementById('usageTruck').value = settings.usageTruck;
+            document.getElementById('usageSuv').value = settings.usageSuv;
+            document.getElementById('usageVan').value = settings.usageVan;
+            document.getElementById('usageCustom').value = settings.usageCustom;
+            document.getElementById('size3Year').value = settings.size3Year;
+            document.getElementById('size5Year').value = settings.size5Year;
+            document.getElementById('size7Year').value = settings.size7Year;
+        }
+
+        function saveSettings() {
+            settings.bottle3Year = parseFloat(document.getElementById('bottle3Year').value) || 85;
+            settings.bottle5Year = parseFloat(document.getElementById('bottle5Year').value) || 120;
+            settings.bottle7Year = parseFloat(document.getElementById('bottle7Year').value) || 180;
+            settings.usageCar = parseFloat(document.getElementById('usageCar').value) || 15;
+            settings.usageCoupe = parseFloat(document.getElementById('usageCoupe').value) || 18;
+            settings.usageTruck = parseFloat(document.getElementById('usageTruck').value) || 25;
+            settings.usageSuv = parseFloat(document.getElementById('usageSuv').value) || 28;
+            settings.usageVan = parseFloat(document.getElementById('usageVan').value) || 32;
+            settings.usageCustom = parseFloat(document.getElementById('usageCustom').value) || 20;
+            settings.size3Year = parseFloat(document.getElementById('size3Year').value) || 50;
+            settings.size5Year = parseFloat(document.getElementById('size5Year').value) || 50;
+            settings.size7Year = parseFloat(document.getElementById('size7Year').value) || 50;
+            
+            closeSettings();
+            updateTimeEstimates();
+            calculateResults();
+        }
+
         // Setup event handlers
         function setupEventHandlers() {
+            // Settings button
+            document.getElementById('settingsBtn').addEventListener('click', openSettings);
+            document.getElementById('closeSettings').addEventListener('click', closeSettings);
+            document.getElementById('saveSettings').addEventListener('click', saveSettings);
+            document.getElementById('cancelSettings').addEventListener('click', closeSettings);
+
             // Vehicle type change
             document.getElementById('vehicleType').addEventListener('change', function() {
                 currentState.vehicleType = this.value;
-                const vehicleEst = vehicleEstimates[this.value];
-                document.getElementById('coatingCoverage').value = vehicleEst.coverage;
+                updateTimeEstimates();
                 calculateResults();
             });
 
             // Paint condition change
             document.getElementById('paintCondition').addEventListener('change', function() {
                 currentState.paintCondition = this.value;
-                updateCorrectionInfo();
+                updateTimeEstimates();
                 calculateResults();
             });
 
             // Surface type change
             document.getElementById('surfaceType').addEventListener('change', function() {
                 currentState.surfaceType = this.value;
-                updateCorrectionInfo();
+                updateTimeEstimates();
                 calculateResults();
             });
 
             // Coating type buttons
-            document.getElementById('standardBtn').addEventListener('click', function() {
-                currentState.coatingType = 'standard';
-                document.getElementById('standardBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
-                document.getElementById('premiumBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+            document.getElementById('threeYearBtn').addEventListener('click', function() {
+                currentState.coatingType = 'three-year';
+                document.getElementById('threeYearBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
+                document.getElementById('fiveYearBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                document.getElementById('sevenYearBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                updateTimeEstimates();
                 calculateResults();
             });
 
-            document.getElementById('premiumBtn').addEventListener('click', function() {
-                currentState.coatingType = 'premium';
-                document.getElementById('premiumBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
-                document.getElementById('standardBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+            document.getElementById('fiveYearBtn').addEventListener('click', function() {
+                currentState.coatingType = 'five-year';
+                document.getElementById('fiveYearBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
+                document.getElementById('threeYearBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                document.getElementById('sevenYearBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                updateTimeEstimates();
+                calculateResults();
+            });
+
+            document.getElementById('sevenYearBtn').addEventListener('click', function() {
+                currentState.coatingType = 'seven-year';
+                document.getElementById('sevenYearBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
+                document.getElementById('threeYearBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                document.getElementById('fiveYearBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                updateTimeEstimates();
                 calculateResults();
             });
 
@@ -552,7 +657,6 @@
                 document.getElementById('hourlyBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
                 document.getElementById('contractedInput').classList.remove('hidden');
                 document.getElementById('hourlyInput').classList.add('hidden');
-                document.getElementById('hourlyInput2').classList.add('hidden');
                 calculateResults();
             });
 
@@ -561,7 +665,6 @@
                 document.getElementById('hourlyBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
                 document.getElementById('contractedBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
                 document.getElementById('hourlyInput').classList.remove('hidden');
-                document.getElementById('hourlyInput2').classList.remove('hidden');
                 document.getElementById('contractedInput').classList.add('hidden');
                 calculateResults();
             });
@@ -582,14 +685,10 @@
             });
 
             // Input changes
-            const inputs = ['coatingCoverage', 'contractedCost', 'hourlyRate', 'hoursNeeded', 'taxPct', 'depositPct', 'coating3YearPrice', 'coating5YearPrice', 'bottleCost', 'bottleSize', 'usagePerCar'];
+            const inputs = ['contractedCost', 'hourlyRate', 'taxPct', 'depositPct'];
             inputs.forEach(id => {
                 document.getElementById(id).addEventListener('input', calculateResults);
             });
-
-            // Special handling for bottle settings
-            document.getElementById('bottleSize').addEventListener('input', updateBottlesPerCar);
-            document.getElementById('usagePerCar').addEventListener('input', updateBottlesPerCar);
 
             // Copy button
             document.getElementById('copyBtn').addEventListener('click', async function() {
@@ -613,15 +712,8 @@
                 document.getElementById('vehicleType').value = 'car';
                 document.getElementById('paintCondition').value = 'excellent';
                 document.getElementById('surfaceType').value = 'paint';
-                document.getElementById('coatingCoverage').value = 200;
-                document.getElementById('coating3YearPrice').value = 2.50;
-                document.getElementById('coating5YearPrice').value = 4.00;
-                document.getElementById('bottleCost').value = 85;
-                document.getElementById('bottleSize').value = 50;
-                document.getElementById('usagePerCar').value = 15;
                 document.getElementById('contractedCost').value = 800;
                 document.getElementById('hourlyRate').value = 75;
-                document.getElementById('hoursNeeded').value = 8;
                 document.getElementById('taxPct').value = 0;
                 document.getElementById('depositPct').value = 50;
                 
@@ -630,14 +722,15 @@
                     vehicleType: 'car',
                     paintCondition: 'excellent',
                     surfaceType: 'paint',
-                    coatingType: 'standard',
+                    coatingType: 'three-year',
                     laborType: 'contracted',
                     customerType: 'customer'
                 };
                 
                 // Reset button styles
-                document.getElementById('standardBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
-                document.getElementById('premiumBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                document.getElementById('threeYearBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
+                document.getElementById('fiveYearBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                document.getElementById('sevenYearBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
                 document.getElementById('contractedBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-blue-600 text-white';
                 document.getElementById('hourlyBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
                 document.getElementById('customerBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-green-600 text-white';
@@ -645,9 +738,8 @@
                 
                 document.getElementById('contractedInput').classList.remove('hidden');
                 document.getElementById('hourlyInput').classList.add('hidden');
-                document.getElementById('hourlyInput2').classList.add('hidden');
                 
-                updateCorrectionInfo();
+                updateTimeEstimates();
                 calculateResults();
             });
         }
@@ -661,12 +753,18 @@
             const paintLabel = paintCondition.options[paintCondition.selectedIndex].text;
             const surfaceLabel = surfaceType.options[surfaceType.selectedIndex].text;
             
+            const coatingLabels = {
+                'three-year': '3-Year Coating',
+                'five-year': '5-Year Coating',
+                'seven-year': '7-9 Year Coating'
+            };
+            
             return `Spectrum Outfitters — Ceramic Coating Quote
 --------------------------------
 Vehicle: ${vehicleLabel}
 Paint Condition: ${paintLabel}
 Surface: ${surfaceLabel}
-Coating: ${currentState.coatingType === 'premium' ? '5-Year Coating' : '3-Year Coating'}
+Coating: ${coatingLabels[currentState.coatingType]}
 Customer Type: ${currentState.customerType === 'dealer' ? 'Dealer (15% off retail)' : 'Retail'}
 
 Costs
@@ -689,8 +787,7 @@ Professional Ceramic Coating Services`;
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             setupEventHandlers();
-            updateCorrectionInfo();
-            updateBottlesPerCar();
+            updateTimeEstimates();
             calculateResults();
         });
     </script>
