@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Tools - Spectrum Outfitters</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .tool-card { 
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        .tool-card:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: #3b82f6;
+        }
+        .coming-soon { 
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-6xl mx-auto p-6">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <div class="flex items-center justify-center gap-3 mb-6">
+                <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                    <span class="text-white font-bold text-xl">S</span>
+                </div>
+                <h1 class="text-4xl font-bold text-gray-800">Spectrum Outfitters</h1>
+            </div>
+            <h2 class="text-3xl font-semibold text-gray-700 mb-4">Professional Business Tools</h2>
+            <p class="text-gray-600 text-lg">Access our suite of professional calculators and business tools</p>
+        </div>
+
+        <!-- Tools Grid -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            <!-- PPF Calculator - ACTIVE -->
+            <div class="tool-card rounded-xl p-6 cursor-pointer" onclick="window.location.href='https://ppf.spectrumoutfitters.com'">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl">🧮</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">PPF Calculator</h3>
+                    <p class="text-gray-600 mb-4">Professional Paint Protection Film pricing calculator with service types</p>
+                    <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                        ✅ Available Now
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wrapping Calculator - COMING SOON -->
+            <div class="tool-card coming-soon rounded-xl p-6">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-gray-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl">🎨</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">Wrapping Calculator</h3>
+                    <p class="text-gray-500 mb-4">Vehicle wrapping pricing and material calculator</p>
+                    <div class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                        🚧 Coming Soon
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tinting Calculator - COMING SOON -->
+            <div class="tool-card coming-soon rounded-xl p-6">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-gray-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl">🕶️</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">Tinting Calculator</h3>
+                    <p class="text-gray-500 mb-4">Window tinting pricing and material estimator</p>
+                    <div class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                        🚧 Coming Soon
+                    </div>
+                </div>
+            </div>
+
+            <!-- Paint Correction - COMING SOON -->
+            <div class="tool-card coming-soon rounded-xl p-6">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-gray-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl">✨</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">Paint Correction</h3>
+                    <p class="text-gray-500 mb-4">Paint correction time and pricing estimator</p>
+                    <div class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                        🚧 Coming Soon
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ceramic Coating - COMING SOON -->
+            <div class="tool-card coming-soon rounded-xl p-6">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-gray-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl">💎</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">Ceramic Coating</h3>
+                    <p class="text-gray-500 mb-4">Ceramic coating pricing and application time</p>
+                    <div class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                        🚧 Coming Soon
+                    </div>
+                </div>
+            </div>
+
+            <!-- Maintenance Scheduler - COMING SOON -->
+            <div class="tool-card coming-soon rounded-xl p-6">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-gray-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl">📅</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">Maintenance Scheduler</h3>
+                    <p class="text-gray-500 mb-4">Vehicle maintenance and service scheduling</p>
+                    <div class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                        🚧 Coming Soon
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Information Section -->
+        <div class="bg-white rounded-xl p-6 border border-gray-200">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">About Our Tools</h3>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-medium text-gray-700 mb-2">Professional Grade</h4>
+                    <p class="text-gray-600 text-sm">All calculators are built with industry-standard pricing and professional business logic.</p>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-700 mb-2">Always Updated</h4>
+                    <p class="text-gray-600 text-sm">Tools are regularly updated with current market rates and new service options.</p>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-700 mb-2">Mobile Friendly</h4>
+                    <p class="text-gray-600 text-sm">All tools work perfectly on desktop, tablet, and mobile devices.</p>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-700 mb-2">Free to Use</h4>
+                    <p class="text-gray-600 text-sm">Professional tools provided free to help you grow your business.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-12 border-t border-gray-200 pt-8">
+            <div class="text-center">
+                <p class="text-gray-600 mb-2">Professional Automotive Services & Business Tools</p>
+                <div class="text-sm text-gray-500 space-y-1">
+                    <p>spectrumoutfitters.com</p>
+                    <p class="text-xs text-gray-400 mt-4">© 2025 Spectrum Outfitters. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add click tracking for analytics (optional)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Track tool clicks
+            const toolCards = document.querySelectorAll('.tool-card');
+            toolCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const toolName = this.querySelector('h3').textContent;
+                    console.log(`Tool clicked: ${toolName}`);
+                    // You can add analytics tracking here
+                });
+            });
+        });
+    </script>
+</body>
+</html>
