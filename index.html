@@ -149,7 +149,7 @@
             // Tax & deposit
             const taxAmount = rounded * (Math.max(0, taxPct) / 100);
             const totalWithTax = rounded + taxAmount;
-            const depositAmount = totalWithTax * (Math.max(0, Math.min(100, depositPct)) / 100;
+            const depositAmount = totalWithTax * (Math.max(0, Math.min(100, depositPct)) / 100);
 
             // Margins
             const margin = (sell) => (sell > 0 ? (sell - totalCost) / sell : 0);
