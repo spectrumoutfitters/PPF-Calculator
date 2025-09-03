@@ -374,6 +374,14 @@
                         </div>
                     </div>
                 </div>
+                
+                <div>
+                    <h4 class="font-medium text-gray-800 mb-2">Paint Correction Hourly Rate</h4>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-gray-500">$</span>
+                        <input type="number" id="paintProtectionRate" value="75" min="0" step="1" class="w-full px-2 py-1 border border-gray-300 rounded" placeholder="75">
+                    </div>
+                </div>
             </div>
 
             <div class="mt-6 flex justify-end space-x-3">
@@ -428,14 +436,15 @@
             usageCustom: 20,
             size3Year: 50,
             size5Year: 50,
-            size7Year: 50
+            size7Year: 50,
+            paintProtectionRate: 75
         };
 
         // Coating type to settings key mapping
         const coatingTypeMap = {
-            'three-year': '3Year',
-            'five-year': '5Year',
-            'seven-year': '7Year'
+            'three-year': '3',
+            'five-year': '5',
+            'seven-year': '7'
         };
 
         // Vehicle type to usage key mapping
@@ -484,10 +493,11 @@
             const correctionTime = correctionEst.hours * surfaceAdj.prepMultiplier;
             const totalTime = baseTime + correctionTime;
             
-            // Calculate bottle usage
+                        // Calculate bottle usage
             const usageKey = vehicleUsageMap[vehicleType];
             const usagePerCar = settings[usageKey];
-            const bottleSize = settings[`size${coatingTypeMap[coatingType]}Year`];
+            const coatingKey = coatingTypeMap[coatingType];
+            const bottleSize = settings[`size${coatingKey}Year`];
             const bottlesPerCar = usagePerCar / bottleSize;
             
 
@@ -517,21 +527,22 @@
             // Calculate costs
             const correctionHours = correctionEst.hours * surfaceAdj.prepMultiplier;
             const correctionMaterials = correctionEst.materials * surfaceAdj.prepMultiplier;
-            const correctionCost = correctionHours * 75; // $75/hour for correction
+            const correctionCost = correctionHours * settings.paintProtectionRate; // Use paint protection rate from settings
 
             // Calculate coating materials cost
             const usageKey = vehicleUsageMap[vehicleType];
             const usagePerCar = settings[usageKey];
-            const bottleSize = settings[`size${coatingTypeMap[coatingType]}Year`];
+            const coatingKey = coatingTypeMap[coatingType];
+            const bottleSize = settings[`size${coatingKey}Year`];
             const bottlesPerCar = usagePerCar / bottleSize;
-            const bottleCost = settings[`bottle${coatingTypeMap[coatingType]}Year`];
+            const bottleCost = settings[`bottle${coatingKey}Year`];
             const coatingMaterialsCost = bottleCost * bottlesPerCar;
             
 
 
             // Calculate coating labor cost (based on time)
             const baseTime = vehicleEst.baseTime;
-            const coatingLaborCost = baseTime * 75; // $75/hour for coating
+            const coatingLaborCost = baseTime * settings.paintProtectionRate; // Use paint protection rate from settings
 
             const prepCost = correctionMaterials + (correctionHours * 15); // $15/hour for prep materials
 
@@ -599,6 +610,7 @@
             document.getElementById('size3Year').value = settings.size3Year;
             document.getElementById('size5Year').value = settings.size5Year;
             document.getElementById('size7Year').value = settings.size7Year;
+            document.getElementById('paintProtectionRate').value = settings.paintProtectionRate;
         }
 
         function saveSettings() {
@@ -614,6 +626,7 @@
             settings.size3Year = parseFloat(document.getElementById('size3Year').value) || 50;
             settings.size5Year = parseFloat(document.getElementById('size5Year').value) || 50;
             settings.size7Year = parseFloat(document.getElementById('size7Year').value) || 50;
+            settings.paintProtectionRate = parseFloat(document.getElementById('paintProtectionRate').value) || 75;
             
             closeSettings();
             updateTimeEstimates();
