@@ -123,6 +123,9 @@
                         <button id="analyzeBtn" class="w-full mt-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
                             🤖 Analyze with AI
                         </button>
+                        <button id="debugBtn" class="w-full mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                            🔍 Debug AI Settings
+                        </button>
                     </div>
                     
                     <!-- AI Analysis Results -->
@@ -259,7 +262,7 @@
             <button id="resetBtn" class="px-6 py-3 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-lg font-semibold">
                 Reset
             </button>
-            <button onclick="window.location.href='/'" class="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-lg font-semibold">
+            <button onclick="window.location.href=window.location.hostname.includes('localhost') ? 'index.html' : '/'" class="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-lg font-semibold">
                 ← Return to Tools
             </button>
         </div>
@@ -306,12 +309,21 @@
                     <h3 class="text-lg font-semibold mb-3 text-gray-700">AI Analysis Settings</h3>
                     <div class="space-y-3">
                         <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Google Vision API Key</label>
+                            <input type="password" id="visionApiKey" placeholder="Enter your Google Vision API key" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <p class="text-xs text-gray-500 mt-1">Get your API key from Google Cloud Console</p>
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">AI Confidence Threshold (%)</label>
                             <input type="number" id="confidenceThreshold" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                         <div class="flex items-center">
                             <input type="checkbox" id="autoRecommend" class="mr-2">
                             <label for="autoRecommend" class="text-sm text-gray-700">Auto-apply AI recommendations</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="useRealAI" class="mr-2">
+                            <label for="useRealAI" class="text-sm text-gray-700">Use real AI analysis (requires API key)</label>
                         </div>
                     </div>
                 </div>
@@ -342,7 +354,9 @@
             compoundCost: 2.50,
             polishCost: 3.00,
             confidenceThreshold: 75,
-            autoRecommend: true
+            autoRecommend: true,
+            visionApiKey: '',
+            useRealAI: false
         };
 
         // Current state
@@ -372,23 +386,159 @@
             'van': 1.5
         };
 
-        // AI Analysis function (simulated)
+        // AI Analysis function - Real or Simulated
         async function analyzePaintCondition(imageFile) {
-            // Simulate AI analysis delay
+            // Check if real AI is enabled and API key is available
+            if (settings.useRealAI && settings.visionApiKey) {
+                try {
+                    // Convert image to base64 for API
+                    const base64Image = await fileToBase64(imageFile);
+                    
+                    // Use Google Vision API for real image analysis
+                    const visionResponse = await callGoogleVisionAPI(base64Image);
+                    
+                    // Analyze the response for paint condition
+                    const analysisResults = analyzeVisionResponse(visionResponse);
+                    
+                    return analysisResults;
+                } catch (error) {
+                    console.error('Real AI analysis failed:', error);
+                    console.error('Error details:', error.message);
+                    alert(`Real AI analysis failed: ${error.message}\n\nFalling back to simulated analysis.`);
+                    // Fallback to simulated analysis if API fails
+                    return await simulatedAnalysis();
+                }
+            } else {
+                // Use simulated analysis
+                return await simulatedAnalysis();
+            }
+        }
+
+        // Convert file to base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                    const base64 = reader.result.split(',')[1]; // Remove data:image/...;base64, prefix
+                    resolve(base64);
+                };
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        // Call Google Vision API
+        async function callGoogleVisionAPI(base64Image) {
+            const API_KEY = settings.visionApiKey;
+            
+            if (!API_KEY) {
+                throw new Error('Google Vision API key not configured');
+            }
+            
+            const response = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${API_KEY}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    requests: [{
+                        image: {
+                            content: base64Image
+                        },
+                        features: [
+                            { type: 'LABEL_DETECTION', maxResults: 10 },
+                            { type: 'TEXT_DETECTION', maxResults: 5 },
+                            { type: 'OBJECT_LOCALIZATION', maxResults: 10 }
+                        ]
+                    }]
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('API Response Error:', response.status, errorText);
+                throw new Error(`Vision API error ${response.status}: ${errorText}`);
+            }
+
+            const result = await response.json();
+            console.log('Vision API Response:', result);
+            return result;
+        }
+
+        // Analyze Google Vision API response for paint condition
+        function analyzeVisionResponse(visionResponse) {
+            const labels = visionResponse.responses[0]?.labelAnnotations || [];
+            const objects = visionResponse.responses[0]?.localizedObjectAnnotations || [];
+            
+            // Analyze labels for paint condition indicators
+            let condition = 'good'; // default
+            let confidence = 75;
+            let issues = [];
+            let recommendations = [];
+
+            // Look for specific paint condition indicators
+            const paintLabels = labels.map(label => label.description.toLowerCase());
+            
+            // Check for damage indicators
+            if (paintLabels.some(label => 
+                label.includes('scratch') || 
+                label.includes('damage') || 
+                label.includes('rust') ||
+                label.includes('corrosion')
+            )) {
+                condition = 'poor';
+                issues.push('Visible scratches or damage detected');
+                recommendations.push('Multi-stage correction required');
+            }
+            
+            // Check for oxidation
+            if (paintLabels.some(label => 
+                label.includes('oxid') || 
+                label.includes('faded') ||
+                label.includes('dull')
+            )) {
+                condition = condition === 'poor' ? 'severe' : 'fair';
+                issues.push('Oxidation or fading detected');
+                recommendations.push('Oxidation removal treatment');
+            }
+            
+            // Check for good condition indicators
+            if (paintLabels.some(label => 
+                label.includes('shiny') || 
+                label.includes('glossy') ||
+                label.includes('reflective')
+            )) {
+                condition = 'excellent';
+                issues.push('Good paint condition');
+                recommendations.push('Light polish recommended');
+            }
+
+            // Calculate confidence based on number of relevant labels
+            confidence = Math.min(95, 60 + (labels.length * 3));
+
+            return {
+                condition,
+                confidence,
+                issues: issues.length > 0 ? issues : generateIssues(condition),
+                recommendations: recommendations.length > 0 ? recommendations : generateRecommendations(condition),
+                rawLabels: paintLabels
+            };
+        }
+
+        // Fallback simulated analysis
+        async function simulatedAnalysis() {
             await new Promise(resolve => setTimeout(resolve, 2000));
             
-            // Simulate AI analysis results
             const conditions = ['excellent', 'good', 'fair', 'poor', 'severe'];
             const randomCondition = conditions[Math.floor(Math.random() * conditions.length)];
             
-            const analysisResults = {
+            return {
                 condition: randomCondition,
-                confidence: Math.floor(Math.random() * 30) + 70, // 70-100%
+                confidence: Math.floor(Math.random() * 30) + 70,
                 issues: generateIssues(randomCondition),
-                recommendations: generateRecommendations(randomCondition)
+                recommendations: generateRecommendations(randomCondition),
+                rawLabels: ['simulated analysis']
             };
-            
-            return analysisResults;
         }
 
         function generateIssues(condition) {
@@ -507,7 +657,9 @@
             analyzeBtn.addEventListener('click', async () => {
                 const file = imageInput.files[0];
                 if (file) {
-                    analyzeBtn.textContent = '🤖 Analyzing...';
+                    // Show what type of analysis is being used
+                    const analysisType = settings.useRealAI && settings.visionApiKey ? 'Real AI' : 'Simulated';
+                    analyzeBtn.textContent = `🤖 Analyzing with ${analysisType}...`;
                     analyzeBtn.disabled = true;
                     
                     try {
@@ -528,6 +680,25 @@
                     analyzeBtn.textContent = '🤖 Analyze with AI';
                     analyzeBtn.disabled = false;
                 }
+            });
+            
+            // Debug button
+            document.getElementById('debugBtn').addEventListener('click', () => {
+                const debugInfo = {
+                    'API Key Set': settings.visionApiKey ? 'Yes (length: ' + settings.visionApiKey.length + ')' : 'No',
+                    'Use Real AI': settings.useRealAI ? 'Yes' : 'No',
+                    'Auto Recommend': settings.autoRecommend ? 'Yes' : 'No',
+                    'Confidence Threshold': settings.confidenceThreshold + '%',
+                    'Settings Saved': localStorage.getItem('paintCorrectionSettings') ? 'Yes' : 'No'
+                };
+                
+                let debugText = 'AI Settings Debug Info:\n\n';
+                for (const [key, value] of Object.entries(debugInfo)) {
+                    debugText += `${key}: ${value}\n`;
+                }
+                
+                alert(debugText);
+                console.log('Debug Info:', debugInfo);
             });
             
             // Form inputs
@@ -568,6 +739,7 @@
             });
             
             document.getElementById('closeSettings').addEventListener('click', () => {
+                saveSettings();
                 document.getElementById('settingsPopup').style.display = 'none';
             });
             
@@ -590,10 +762,22 @@
             const aiResults = document.getElementById('aiResults');
             const aiAnalysisText = document.getElementById('aiAnalysisText');
             
+            // Determine if this is real AI or simulated
+            const isRealAI = settings.useRealAI && settings.visionApiKey && !analysis.rawLabels?.includes('simulated analysis');
+            const aiType = isRealAI ? '🤖 Real AI Analysis' : '🎭 Simulated Analysis';
+            const aiTypeColor = isRealAI ? 'text-green-600' : 'text-orange-600';
+            
             let analysisHTML = `
-                <div class="mb-3">
-                    <strong>Condition:</strong> ${analysis.condition.charAt(0).toUpperCase() + analysis.condition.slice(1)}<br>
-                    <strong>Confidence:</strong> ${analysis.confidence}%
+                <div class="mb-3 p-2 bg-gray-100 rounded">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="font-semibold ${aiTypeColor}">${aiType}</span>
+                        ${isRealAI ? '<span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">LIVE</span>' : '<span class="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">DEMO</span>'}
+                    </div>
+                    <div class="text-sm text-gray-600">
+                        <strong>Condition:</strong> ${analysis.condition.charAt(0).toUpperCase() + analysis.condition.slice(1)}<br>
+                        <strong>Confidence:</strong> ${analysis.confidence}%
+                        ${analysis.rawLabels && analysis.rawLabels.length > 0 ? `<br><strong>AI Labels:</strong> ${analysis.rawLabels.slice(0, 3).join(', ')}${analysis.rawLabels.length > 3 ? '...' : ''}` : ''}
+                    </div>
                 </div>
                 <div class="mb-3">
                     <strong>Issues Detected:</strong>
@@ -641,6 +825,8 @@
             document.getElementById('polishCost').value = settings.polishCost;
             document.getElementById('confidenceThreshold').value = settings.confidenceThreshold;
             document.getElementById('autoRecommend').checked = settings.autoRecommend;
+            document.getElementById('visionApiKey').value = settings.visionApiKey;
+            document.getElementById('useRealAI').checked = settings.useRealAI;
         }
 
         function saveSettings() {
@@ -650,6 +836,8 @@
             settings.polishCost = parseFloat(document.getElementById('polishCost').value);
             settings.confidenceThreshold = parseInt(document.getElementById('confidenceThreshold').value);
             settings.autoRecommend = document.getElementById('autoRecommend').checked;
+            settings.visionApiKey = document.getElementById('visionApiKey').value;
+            settings.useRealAI = document.getElementById('useRealAI').checked;
             
             localStorage.setItem('paintCorrectionSettings', JSON.stringify(settings));
         }
