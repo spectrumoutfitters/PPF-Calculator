@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spectrum Outfitters Tint Calculator - Enhanced</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .calculator-section { background-color: #f9fafb; padding: 1.5rem; border-radius: 0.5rem; }
+        .results-section { background-color: #eff6ff; padding: 1.5rem; border-radius: 0.5rem; }
+        .price-display { background-color: #dcfce7; padding: 1rem; border-radius: 0.5rem; text-align: center; }
+        .floor-price { background-color: #fef2f2; border: 1px solid #fecaca; padding: 0.75rem; border-radius: 0.5rem; }
+        .cost-breakdown { background-color: white; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; }
+        .service-info { background-color: #f0f9ff; border: 1px solid #bae6fd; padding: 0.75rem; border-radius: 0.5rem; }
+        .settings-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        .settings-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <div class="max-w-6xl mx-auto p-6">
+        <div class="text-center mb-8 relative">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">🧮 Spectrum Outfitters Tint Calculator</h1>
+            <p class="text-gray-600">Professional Window Tinting Pricing Tool with Service Types</p>
+            
+            <!-- Settings Button -->
+            <button id="settingsBtn" class="absolute top-0 right-0 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                ⚙️ Settings
+            </button>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-6">
+            <!-- Vehicle & Materials -->
+            <div class="calculator-section">
+                <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                    🚗 Vehicle & Materials
+                </h2>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Vehicle Type</label>
+                        <select id="vehicleType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select Vehicle Type</option>
+                            <option value="sedan">Sedan</option>
+                            <option value="suv">SUV</option>
+                            <option value="truck">Truck</option>
+                            <option value="van">Van</option>
+                            <option value="coupe">Coupe</option>
+                            <option value="wagon">Wagon</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Year Range</label>
+                        <select id="yearRange" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select Year Range</option>
+                            <option value="2020-2024">2020-2024</option>
+                            <option value="2015-2019">2015-2019</option>
+                            <option value="2010-2014">2010-2014</option>
+                            <option value="pre-2010">Pre-2010</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Window Selection -->
+            <div class="calculator-section">
+                <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                    🪟 Window Selection
+                </h2>
+                <div id="windowSelection" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <!-- Windows will be populated dynamically -->
+                </div>
+                <div class="price-display">
+                    <p class="text-lg font-semibold text-green-800">
+                        Total Coverage: <span id="totalCoverage" class="text-3xl font-bold text-green-700">0</span> sq ft
+                    </p>
+                </div>
+            </div>
+
+            <!-- Film & Pricing -->
+            <div class="calculator-section">
+                <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                    💰 Film & Pricing
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Film Quality</label>
+                        <select id="filmQuality" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="basic">Basic</option>
+                            <option value="standard">Standard</option>
+                            <option value="premium">Premium</option>
+                            <option value="ceramic">Ceramic</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Sales Type</label>
+                        <div class="flex space-x-2">
+                            <button id="inboundBtn" class="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm font-medium">Inbound</button>
+                            <button id="outboundBtn" class="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium">Outbound</button>
+                            <button id="directBtn" class="px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm font-medium">Direct</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Commission Rate</label>
+                        <select id="commissionRate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="0">Select Sales Type First</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="dealerVolume" class="mr-2 h-4 w-4 text-blue-600">
+                            <span class="text-sm font-medium text-gray-700">Dealer Volume Job</span>
+                        </label>
+                    </div>
+                    <div>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="tintRemoval" class="mr-2 h-4 w-4 text-orange-600">
+                            <span class="text-sm font-medium text-gray-700">Tint Removal Required</span>
+                        </label>
+                        <p class="text-xs text-gray-500 mt-1 ml-6">Adds removal labor time and cost</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section">
+                <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                    💰 Pricing Results
+                </h2>
+                <div class="space-y-4">
+                    <div class="cost-breakdown">
+                        <h3 class="text-lg font-semibold mb-3 text-gray-700">Customer Pricing</h3>
+                        <div class="space-y-2">
+                            <p class="flex justify-between">
+                                <span>Material Cost:</span>
+                                <span id="materialCost">$0.00</span>
+                            </p>
+                            <p class="flex justify-between">
+                                <span>Labor Cost:</span>
+                                <span id="laborCost">$0.00</span>
+                            </p>
+                            <p class="flex justify-between hidden" id="removalCostRow">
+                                <span>Removal Cost:</span>
+                                <span id="removalCost">$0.00</span>
+                            </p>
+                            <p class="flex justify-between">
+                                <span>Total Cost:</span>
+                                <span id="totalCost">$0.00</span>
+                            </p>
+                            <p class="flex justify-between">
+                                <span>Retail Price:</span>
+                                <span id="retailPrice">$0.00</span>
+                            </p>
+                            <p class="flex justify-between">
+                                <span>Dealer Price:</span>
+                                <span id="dealerPrice">$0.00</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="cost-breakdown">
+                        <h3 class="text-lg font-semibold mb-3 text-gray-700">Internal Breakdown</h3>
+                        <div class="space-y-2">
+                            <p class="flex justify-between">
+                                <span>Gross Profit:</span>
+                                <span id="grossProfit">$0.00</span>
+                            </p>
+                            <p class="flex justify-between">
+                                <span>Commission:</span>
+                                <span id="commissionAmount">$0.00</span>
+                            </p>
+                            <p class="flex justify-between">
+                                <span>Net Profit:</span>
+                                <span id="netProfit">$0.00</span>
+                            </p>
+                            <p class="flex justify-between">
+                                <span>Gross Margin:</span>
+                                <span id="grossMargin">0%</span>
+                            </p>
+                            <p class="flex justify-between">
+                                <span>Net Margin:</span>
+                                <span id="netMargin">0%</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Floor Price Protection -->
+            <div class="floor-price">
+                <h2 class="text-xl font-semibold mb-3 text-gray-800">Floor Price Protection</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Minimum margin requirement:</p>
+                        <p class="text-lg font-semibold text-blue-600">
+                            <span id="marginRequirement">30%</span> minimum
+                            <span id="dealerVolumeIndicator" class="hidden text-sm text-gray-500">(25.5% for dealer volume)</span>
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Floor price:</p>
+                        <p class="text-2xl font-bold text-green-600" id="floorPrice">$0.00</p>
+                    </div>
+                </div>
+                
+                <!-- Margin Warning -->
+                <div id="marginWarning" class="hidden mt-4">
+                    <div class="bg-red-100 border border-red-300 rounded p-3">
+                        <h3 class="text-lg font-semibold mb-2 text-red-600">⚠️ Margin Warning</h3>
+                        <p id="warningMessage" class="text-gray-700"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-center space-x-4 mt-6">
+            <button id="calculateBtn" class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-lg font-semibold">
+                Calculate Pricing
+            </button>
+            <button id="resetBtn" class="px-6 py-3 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-lg font-semibold">
+                Reset
+            </button>
+            <button onclick="window.location.href='/' class="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-lg font-semibold">
+                ← Return to Tools
+            </button>
+        </div>
+    </div>
+    </main>
+
+    <!-- Settings Popup -->
+    <div id="settingsPopup" class="settings-popup">
+        <div class="settings-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Tint Calculator Settings</h2>
+                <button id="closeSettings" class="text-2xl hover:text-gray-600">&times;</button>
+            </div>
+            
+            <div class="space-y-6">
+                <!-- Film Pricing -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-3 text-gray-700">Film Cost per Square Foot</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Basic</label>
+                            <input type="number" id="basicCost" step="0.01" min="0" class="w-full p-2 border border-gray-300 rounded">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Standard</label>
+                            <input type="number" id="standardCost" step="0.01" min="0" class="w-full p-2 border border-gray-300 rounded">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Premium</label>
+                            <input type="number" id="premiumCost" step="0.01" min="0" class="w-full p-2 border border-gray-300 rounded">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ceramic</label>
+                            <input type="number" id="ceramicCost" step="0.01" min="0" class="w-full p-2 border border-gray-300 rounded">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Labor Rate -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-3 text-gray-700">Labor Rate</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Hourly Rate ($)</label>
+                            <input type="number" id="hourlyRate" step="0.01" min="0" class="w-full p-2 border border-gray-300 rounded">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Hours per Job</label>
+                            <input type="number" id="hoursPerJob" step="0.5" min="0" class="w-full p-2 border border-gray-300 rounded">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tint Removal -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-3 text-gray-700">Tint Removal</h3>
+                    <div class="grid grid-cols-1 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Removal Rate ($/hr)</label>
+                            <input type="number" id="removalRate" step="0.01" min="0" class="w-full p-2 border border-gray-300 rounded">
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Removal time is calculated as 50% of installation time per window</p>
+                </div>
+
+                <!-- Default Commission -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-3 text-gray-700">Default Commission Rate</h3>
+                    <select id="defaultCommission" class="w-full p-2 border border-gray-300 rounded">
+                        <option value="3">3% (Inbound)</option>
+                        <option value="4">4% (Inbound)</option>
+                        <option value="5">5% (Inbound)</option>
+                        <option value="6">6% (Outbound)</option>
+                        <option value="7">7% (Outbound)</option>
+                        <option value="8">8% (Outbound)</option>
+                        <option value="0">0% (Direct)</option>
+                    </select>
+                </div>
+
+                <!-- Settings Actions -->
+                <div class="flex justify-between pt-4">
+                    <div class="space-x-2">
+                        <button id="exportSettings" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Export Settings</button>
+                        <button id="importSettings" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Import Settings</button>
+                    </div>
+                    <div class="space-x-2">
+                        <button id="cancelSettings" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">Cancel</button>
+                        <button id="saveSettings" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Save Settings</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Vehicle database with window coverage
+        const vehicleDatabase = {
+            // Sedan variations
+            'sedan-2020-2024': {
+                name: 'Sedan (2020-2024)',
+                windows: {
+                    windshield: { name: 'Windshield', sqft: 25.5, labor: 1.5 },
+                    frontSide: { name: 'Front Side Windows', sqft: 16.4, labor: 1.0 },
+                    rearSide: { name: 'Rear Side Windows', sqft: 16.4, labor: 1.0 },
+                    rearWindow: { name: 'Rear Window', sqft: 18.5, labor: 1.2 },
+                    sunroof: { name: 'Sunroof', sqft: 6.8, labor: 0.8 }
+                }
+            },
+            'sedan-2015-2019': {
+                name: 'Sedan (2015-2019)',
+                windows: {
+                    windshield: { name: 'Windshield', sqft: 24.8, labor: 1.5 },
+                    frontSide: { name: 'Front Side Windows', sqft: 16.0, labor: 1.0 },
+                    rearSide: { name: 'Rear Side Windows', sqft: 16.0, labor: 1.0 },
+                    rearWindow: { name: 'Rear Window', sqft: 18.0, labor: 1.2 },
+                    sunroof: { name: 'Sunroof', sqft: 6.5, labor: 0.8 }
+                }
+            },
+            'sedan-2010-2014': {
+                name: 'Sedan (2010-2014)',
+                windows: {
+                    windshield: { name: 'Windshield', sqft: 24.2, labor: 1.5 },
+                    frontSide: { name: 'Front Side Windows', sqft: 15.8, labor: 1.0 },
+                    rearSide: { name: 'Rear Side Windows', sqft: 15.8, labor: 1.0 },
+                    rearWindow: { name: 'Rear Window', sqft: 17.5, labor: 1.2 },
+                    sunroof: { name: 'Sunroof', sqft: 6.2, labor: 0.8 }
+                }
+            },
+            'sedan-pre-2010': {
+                name: 'Sedan (Pre-2010)',
+                windows: {
+                    windshield: { name: 'Windshield', sqft: 23.5, labor: 1.5 },
+                    frontSide: { name: 'Front Side Windows', sqft: 15.5, labor: 1.0 },
+                    rearSide: { name: 'Rear Side Windows', sqft: 15.5, labor: 1.0 },
+                    rearWindow: { name: 'Rear Window', sqft: 17.0, labor: 1.2 },
+                    sunroof: { name: 'Sunroof', sqft: 6.0, labor: 0.8 }
+                }
+            },
+            
+            // SUV variations
+            'suv-2020-2024': {
+                name: 'SUV (2020-2024)',
+                windows: {
+                    windshield: { name: 'Windshield', sqft: 28.2, labor: 1.8 },
+                    frontSide: { name: 'Front Side Windows', sqft: 18.6, labor: 1.2 },
+                    rearSide: { name: 'Rear Side Windows', sqft: 18.6, labor: 1.2 },
+                    rearWindow: { name: 'Rear Window', sqft: 22.4, labor: 1.5 },
+                    sunroof: { name: 'Sunroof', sqft: 8.2, labor: 1.0 }
+                }
+            },
+            'suv-2015-2019': {
+                name: 'SUV (2015-2019)',
+                windows: {
+                    windshield: { name: 'Windshield', sqft: 27.5, labor: 1.8 },
+                    frontSide: { name: 'Front Side Windows', sqft: 18.2, labor: 1.2 },
+                    rearSide: { name: 'Rear Side Windows', sqft: 18.2, labor: 1.2 },
+                    rearWindow: { name: 'Rear Window', sqft: 21.8, labor: 1.5 },
+                    sunroof: { name: 'Sunroof', sqft: 8.0, labor: 1.0 }
+                }
+            },
+            'suv-2010-2014': {
+                name: 'SUV (2010-2014)',
+                windows: {
+                    windshield: { name: 'Windshield', sqft: 26.8, labor: 1.8 },
+                    frontSide: { name: 'Front Side Windows', sqft: 17.8, labor: 1.2 },
+                    rearSide: { name: 'Rear Side Windows', sqft: 17.8, labor: 1.2 },
+                    rearWindow: { name: 'Rear Window', sqft: 21.2, labor: 1.5 },
+                    sunroof: { name: 'Sunroof', sqft: 7.8, labor: 1.0 }
+                }
+            },
+            'suv-pre-2010': {
+                name: 'SUV (Pre-2010)',
+                windows: {
+                    windshield: { name: 'Windshield', sqft: 26.0, labor: 1.8 },
+                    frontSide: { name: 'Front Side Windows', sqft: 17.5, labor: 1.2 },
+                    rearSide: { name: 'Rear Side Windows', sqft: 17.5, labor: 1.2 },
+                    rearWindow: { name: 'Rear Window', sqft: 20.5, labor: 1.5 },
+                    sunroof: { name: 'Sunroof', sqft: 7.5, labor: 1.0 }
+                }
+            },
+            
+            // Truck variations
+            'truck-2020-2024': {
+                name: 'Truck (2020-2024)',
+                windows: {
+                    windshield: { name: 'Windshield', sqft: 30.8, labor: 2.0 },
+                    frontSide: { name: 'Front Side Windows', sqft: 20.4, labor: 1.3 },
+                    rearSide: { name: 'Rear Side Windows', sqft: 20.4, labor: 1.3 },
+                    rearWindow: { name: 'Rear Window', sqft: 24.6, labor: 1.6 }
+                }
+            },
+            'truck-2015-2019': {
+                name: 'Truck (2015-2019)',
+                windows: {
+                    windshield: { name: 'Windshield', sqft: 30.0, labor: 2.0 },
+                    frontSide: { name: 'Front Side Windows', sqft: 20.0, labor: 1.3 },
+                    rearSide: { name: 'Rear Side Windows', sqft: 20.0, labor: 1.3 },
+                    rearWindow: { name: 'Rear Window', sqft: 24.0, labor: 1.6 }
+                }
+            },
+            'truck-2010-2014': {
+                name: 'Truck (2010-2014)',
+                windows: {
+                    windshield: { name: 'Windshield', sqft: 29.2, labor: 2.0 },
+                    frontSide: { name: 'Front Side Windows', sqft: 19.6, labor: 1.3 },
+                    rearSide: { name: 'Rear Side Windows', sqft: 19.6, labor: 1.3 },
+                    rearWindow: { name: 'Rear Window', sqft: 23.4, labor: 1.6 }
+                }
+            },
+            'truck-pre-2010': {
+                name: 'Truck (Pre-2010)',
+                windows: {
+                    windshield: { name: 'Windshield', sqft: 28.5, labor: 2.0 },
+                    frontSide: { name: 'Front Side Windows', sqft: 19.2, labor: 1.3 },
+                    rearSide: { name: 'Rear Side Windows', sqft: 19.2, labor: 1.3 },
+                    rearWindow: { name: 'Rear Window', sqft: 22.8, labor: 1.6 }
+                }
+            },
+            
+            // Van variations
+            'van-2020-2024': {
+                name: 'Van (2020-2024)',
+                windows: {
+                    windshield: { name: 'Windshield', sqft: 32.5, labor: 2.2 },
+                    frontSide: { name: 'Front Side Windows', sqft: 22.8, labor: 1.5 },
+                    rearSide: { name: 'Rear Side Windows', sqft: 22.8, labor: 1.5 },
+                    rearWindow: { name: 'Rear Window', sqft: 26.4, labor: 1.8 }
+                }
+            },
+            'van-2015-2019': {
+                name: 'Van (2015-2019)',
+                windows: {
+                    windshield: { name: 'Windshield', sqft: 31.8, labor: 2.2 },
+                    frontSide: { name: 'Front Side Windows', sqft: 22.4, labor: 1.5 },
+                    rearSide: { name: 'Rear Side Windows', sqft: 22.4, labor: 1.5 },
+                    rearWindow: { name: 'Rear Window', sqft: 25.8, labor: 1.8 }
+                }
+            },
+            'van-2010-2014': {
+                name: 'Van (2010-2014)',
+                windows: {
+                    windshield: { name: 'Windshield', sqft: 31.0, labor: 2.2 },
+                    frontSide: { name: 'Front Side Windows', sqft: 22.0, labor: 1.5 },
+                    rearSide: { name: 'Rear Side Windows', sqft: 22.0, labor: 1.5 },
+                    rearWindow: { name: 'Rear Window', sqft: 25.2, labor: 1.8 }
+                }
+            },
+            'van-pre-2010': {
+                name: 'Van (Pre-2010)',
+                windows: {
+                    windshield: { name: 'Windshield', sqft: 30.2, labor: 2.2 },
+                    frontSide: { name: 'Front Side Windows', sqft: 21.6, labor: 1.5 },
+                    rearSide: { name: 'Rear Side Windows', sqft: 21.6, labor: 1.5 },
+                    rearWindow: { name: 'Rear Window', sqft: 24.6, labor: 1.8 }
+                }
+            },
+            
+            // Coupe variations
+            'coupe-2020-2024': {
+                name: 'Coupe (2020-2024)',
+                windows: {
+                    windshield: { name: 'Windshield', sqft: 23.8, labor: 1.4 },
+                    frontSide: { name: 'Front Side Windows', sqft: 14.2, labor: 0.9 },
+                    rearSide: { name: 'Rear Side Windows', sqft: 14.2, labor: 0.9 },
+                    rearWindow: { name: 'Rear Window', sqft: 16.8, labor: 1.1 }
+                }
+            },
+            'coupe-2015-2019': {
+                name: 'Coupe (2015-2019)',
+                windows: {
+                    windshield: { name: 'Windshield', sqft: 23.2, labor: 1.4 },
+                    frontSide: { name: 'Front Side Windows', sqft: 13.8, labor: 0.9 },
+                    rearSide: { name: 'Rear Side Windows', sqft: 13.8, labor: 0.9 },
+                    rearWindow: { name: 'Rear Window', sqft: 16.4, labor: 1.1 }
+                }
+            },
+            'coupe-2010-2014': {
+                name: 'Coupe (2010-2014)',
+                windows: {
+                    windshield: { name: 'Windshield', sqft: 22.6, labor: 1.4 },
+                    frontSide: { name: 'Front Side Windows', sqft: 13.5, labor: 0.9 },
+                    rearSide: { name: 'Rear Side Windows', sqft: 13.5, labor: 0.9 },
+                    rearWindow: { name: 'Rear Window', sqft: 16.0, labor: 1.1 }
+                }
+            },
+            'coupe-pre-2010': {
+                name: 'Coupe (Pre-2010)',
+                windows: {
+                    windshield: { name: 'Windshield', sqft: 22.0, labor: 1.4 },
+                    frontSide: { name: 'Front Side Windows', sqft: 13.2, labor: 0.9 },
+                    rearSide: { name: 'Rear Side Windows', sqft: 13.2, labor: 0.9 },
+                    rearWindow: { name: 'Rear Window', sqft: 15.6, labor: 1.1 }
+                }
+            },
+            
+            // Wagon variations
+            'wagon-2020-2024': {
+                name: 'Wagon (2020-2024)',
+                windows: {
+                    windshield: { name: 'Windshield', sqft: 26.2, labor: 1.6 },
+                    frontSide: { name: 'Front Side Windows', sqft: 17.8, labor: 1.1 },
+                    rearSide: { name: 'Rear Side Windows', sqft: 17.8, labor: 1.1 },
+                    rearWindow: { name: 'Rear Window', sqft: 20.4, labor: 1.3 },
+                    sunroof: { name: 'Sunroof', sqft: 7.5, labor: 0.9 }
+                }
+            },
+            'wagon-2015-2019': {
+                name: 'Wagon (2015-2019)',
+                windows: {
+                    windshield: { name: 'Windshield', sqft: 25.6, labor: 1.6 },
+                    frontSide: { name: 'Front Side Windows', sqft: 17.4, labor: 1.1 },
+                    rearSide: { name: 'Rear Side Windows', sqft: 17.4, labor: 1.1 },
+                    rearWindow: { name: 'Rear Window', sqft: 20.0, labor: 1.3 },
+                    sunroof: { name: 'Sunroof', sqft: 7.3, labor: 0.9 }
+                }
+            },
+            'wagon-2010-2014': {
+                name: 'Wagon (2010-2014)',
+                windows: {
+                    windshield: { name: 'Windshield', sqft: 25.0, labor: 1.6 },
+                    frontSide: { name: 'Front Side Windows', sqft: 17.0, labor: 1.1 },
+                    rearSide: { name: 'Rear Side Windows', sqft: 17.0, labor: 1.1 },
+                    rearWindow: { name: 'Rear Window', sqft: 19.6, labor: 1.3 },
+                    sunroof: { name: 'Sunroof', sqft: 7.1, labor: 0.9 }
+                }
+            },
+            'wagon-pre-2010': {
+                name: 'Wagon (Pre-2010)',
+                windows: {
+                    windshield: { name: 'Windshield', sqft: 24.4, labor: 1.6 },
+                    frontSide: { name: 'Front Side Windows', sqft: 16.6, labor: 1.1 },
+                    rearSide: { name: 'Rear Side Windows', sqft: 16.6, labor: 1.1 },
+                    rearWindow: { name: 'Rear Window', sqft: 19.2, labor: 1.3 },
+                    sunroof: { name: 'Sunroof', sqft: 6.9, labor: 0.9 }
+                }
+            }
+        };
+
+        // Default settings
+        let settings = {
+            basicCost: 2.50,
+            standardCost: 3.75,
+            premiumCost: 5.25,
+            ceramicCost: 8.50,
+            hourlyRate: 65.00,
+            hoursPerJob: 3.0,
+            removalRate: 75.00,
+            defaultCommission: 4
+        };
+
+        // Current state
+        let currentState = {
+            vehicleType: '',
+            yearRange: '',
+            selectedWindows: [],
+            filmQuality: 'standard',
+            salesType: 'inbound',
+            commissionRate: 4,
+            dealerVolume: false,
+            tintRemoval: false
+        };
+
+        // Load settings from localStorage
+        function loadSettingsFromStorage() {
+            const saved = localStorage.getItem('tintCalculatorSettings');
+            if (saved) {
+                settings = { ...settings, ...JSON.parse(saved) };
+            }
+            loadSettingsToForm();
+        }
+
+        // Save settings to localStorage
+        function saveSettingsToStorage() {
+            localStorage.setItem('tintCalculatorSettings', JSON.stringify(settings));
+        }
+
+        // Load settings to form
+        function loadSettingsToForm() {
+            document.getElementById('basicCost').value = settings.basicCost;
+            document.getElementById('standardCost').value = settings.standardCost;
+            document.getElementById('premiumCost').value = settings.premiumCost;
+            document.getElementById('ceramicCost').value = settings.ceramicCost;
+            document.getElementById('hourlyRate').value = settings.hourlyRate;
+            document.getElementById('hoursPerJob').value = settings.hoursPerJob;
+            document.getElementById('removalRate').value = settings.removalRate;
+            document.getElementById('defaultCommission').value = settings.defaultCommission;
+        }
+
+        // Save settings from form
+        function saveSettings() {
+            settings.basicCost = parseFloat(document.getElementById('basicCost').value) || 0;
+            settings.standardCost = parseFloat(document.getElementById('standardCost').value) || 0;
+            settings.premiumCost = parseFloat(document.getElementById('premiumCost').value) || 0;
+            settings.ceramicCost = parseFloat(document.getElementById('ceramicCost').value) || 0;
+            settings.hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 0;
+            settings.hoursPerJob = parseFloat(document.getElementById('hoursPerJob').value) || 0;
+            settings.removalRate = parseFloat(document.getElementById('removalRate').value) || 0;
+            settings.defaultCommission = parseInt(document.getElementById('defaultCommission').value) || 0;
+            
+            saveSettingsToStorage();
+            closeSettings();
+            calculateResults();
+        }
+
+        // Export settings
+        function exportSettings() {
+            const dataStr = JSON.stringify(settings, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'tint-calculator-settings.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Import settings
+        function importSettings() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const imported = JSON.parse(e.target.result);
+                        settings = { ...settings, ...imported };
+                        loadSettingsToForm();
+                        saveSettingsToStorage();
+                        calculateResults();
+                    } catch (error) {
+                        alert('Error importing settings: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        // Update window selection based on vehicle
+        function updateWindowSelection() {
+            const vehicleKey = `${currentState.vehicleType}-${currentState.yearRange}`;
+            const vehicle = vehicleDatabase[vehicleKey];
+            const container = document.getElementById('windowSelection');
+            
+            if (!vehicle) {
+                container.innerHTML = '<p class="text-gray-500">Please select a vehicle type and year range</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            Object.entries(vehicle.windows).forEach(([key, window]) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center space-x-3 p-4 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer';
+                div.innerHTML = `
+                    <input type="checkbox" id="window_${key}" value="${key}" class="h-5 w-5 text-blue-600 rounded focus:ring-blue-500">
+                    <label for="window_${key}" class="text-sm font-medium text-gray-700 cursor-pointer">
+                        <div class="font-semibold">${window.name}</div>
+                        <div class="text-xs text-gray-500">${window.sqft} sq ft • ${window.labor} hrs</div>
+                    </label>
+                `;
+                container.appendChild(div);
+            });
+
+            // Add event listeners to checkboxes
+            document.querySelectorAll('#windowSelection input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', updateTotalCoverage);
+            });
+        }
+
+        // Update total coverage
+        function updateTotalCoverage() {
+            const vehicleKey = `${currentState.vehicleType}-${currentState.yearRange}`;
+            const vehicle = vehicleDatabase[vehicleKey];
+            if (!vehicle) return;
+
+            const selectedWindows = Array.from(document.querySelectorAll('#windowSelection input[type="checkbox"]:checked'))
+                .map(cb => cb.value);
+
+            let totalSqft = 0;
+            selectedWindows.forEach(key => {
+                if (vehicle.windows[key]) {
+                    totalSqft += vehicle.windows[key].sqft;
+                }
+            });
+
+            document.getElementById('totalCoverage').textContent = totalSqft.toFixed(1);
+            currentState.selectedWindows = selectedWindows;
+        }
+
+        // Calculate results
+        function calculateResults() {
+            const vehicleKey = `${currentState.vehicleType}-${currentState.yearRange}`;
+            const vehicle = vehicleDatabase[vehicleKey];
+            if (!vehicle || currentState.selectedWindows.length === 0) return;
+
+            // Calculate material cost
+            let materialCost = 0;
+            let totalLaborHours = 0;
+            
+            currentState.selectedWindows.forEach(key => {
+                if (vehicle.windows[key]) {
+                    const sqft = vehicle.windows[key].sqft;
+                    const laborHours = vehicle.windows[key].labor;
+                    
+                    // Get film cost per sq ft
+                    let costPerSqft = 0;
+                    switch (currentState.filmQuality) {
+                        case 'basic': costPerSqft = settings.basicCost; break;
+                        case 'standard': costPerSqft = settings.standardCost; break;
+                        case 'premium': costPerSqft = settings.premiumCost; break;
+                        case 'ceramic': costPerSqft = settings.ceramicCost; break;
+                    }
+                    
+                    materialCost += sqft * costPerSqft;
+                    totalLaborHours += laborHours;
+                }
+            });
+
+            // Calculate labor cost
+            const laborCost = totalLaborHours * settings.hourlyRate;
+            
+            // Calculate removal cost if needed (based on actual removal time)
+            let removalCost = 0;
+            let removalLaborHours = 0;
+            if (currentState.tintRemoval) {
+                // Calculate removal time based on selected windows
+                currentState.selectedWindows.forEach(key => {
+                    if (vehicle.windows[key]) {
+                        // Removal typically takes 50% of installation time
+                        removalLaborHours += vehicle.windows[key].labor * 0.5;
+                    }
+                });
+                removalCost = removalLaborHours * settings.removalRate;
+            }
+            
+            const totalCost = materialCost + laborCost + removalCost;
+
+            // Pricing tiers with dealer volume adjustment (like PPF calculator)
+            const BASELINE_MARGIN = 0.30; // 30% minimum margin
+            const RETAIL_MARKUP = 0.30;   // 30% retail markup
+            const DEALER_DISCOUNT = 0.15; // 15% dealer discount
+            
+            const effectiveMargin = currentState.dealerVolume ? BASELINE_MARGIN * 0.85 : BASELINE_MARGIN;
+            const baselinePrice = totalCost / (1 - effectiveMargin);
+            const retailPrice = baselinePrice * (1 + RETAIL_MARKUP);
+            const dealerPrice = retailPrice * (1 - DEALER_DISCOUNT);
+
+            // Final price (like PPF calculator)
+            const candidate = currentState.salesType === 'direct' ? retailPrice : dealerPrice;
+            const floorAppliedPrice = Math.max(candidate, baselinePrice);
+            const finalPrice = floorAppliedPrice;
+
+            // Calculate profits and margins
+            const grossProfit = finalPrice - totalCost;
+            const commissionAmount = grossProfit * (currentState.commissionRate / 100);
+            const netProfit = grossProfit - commissionAmount;
+            
+            const grossMargin = (grossProfit / finalPrice) * 100;
+            const netMargin = (netProfit / finalPrice) * 100;
+
+            // Update display
+            updateDisplay({
+                materialCost,
+                laborCost,
+                removalCost,
+                totalCost,
+                baselinePrice,
+                finalPrice,
+                retailPrice,
+                dealerPrice,
+                grossProfit,
+                commissionAmount,
+                netProfit,
+                grossMargin,
+                netMargin
+            });
+
+            // Check margin warnings
+            checkMarginWarnings(netMargin, grossProfit, commissionAmount);
+        }
+
+        // Update display
+        function updateDisplay(results) {
+            document.getElementById('materialCost').textContent = `$${results.materialCost.toFixed(2)}`;
+            document.getElementById('laborCost').textContent = `$${results.laborCost.toFixed(2)}`;
+            
+            // Show removal cost if applicable
+            const removalCostRow = document.getElementById('removalCostRow');
+            if (removalCostRow) {
+                if (currentState.tintRemoval && results.removalCost > 0) {
+                    removalCostRow.classList.remove('hidden');
+                    document.getElementById('removalCost').textContent = `$${results.removalCost.toFixed(2)}`;
+                } else {
+                    removalCostRow.classList.add('hidden');
+                }
+            }
+            
+            document.getElementById('totalCost').textContent = `$${results.totalCost.toFixed(2)}`;
+            document.getElementById('retailPrice').textContent = `$${results.retailPrice.toFixed(2)}`;
+            document.getElementById('dealerPrice').textContent = `$${results.dealerPrice.toFixed(2)}`;
+            document.getElementById('grossProfit').textContent = `$${results.grossProfit.toFixed(2)}`;
+            document.getElementById('commissionAmount').textContent = `$${results.commissionAmount.toFixed(2)}`;
+            document.getElementById('netProfit').textContent = `$${results.netProfit.toFixed(2)}`;
+            document.getElementById('grossMargin').textContent = `${results.grossMargin.toFixed(1)}%`;
+            document.getElementById('netMargin').textContent = `${results.netMargin.toFixed(1)}%`;
+            document.getElementById('floorPrice').textContent = `$${results.baselinePrice.toFixed(2)}`;
+
+            // Update dealer volume indicator
+            const indicator = document.getElementById('dealerVolumeIndicator');
+            if (currentState.dealerVolume) {
+                indicator.classList.remove('hidden');
+                document.getElementById('marginRequirement').textContent = '25.5%';
+            } else {
+                document.getElementById('marginRequirement').textContent = '30%';
+            }
+        }
+
+        // Check margin warnings
+        function checkMarginWarnings(netMargin, grossProfit, commissionAmount) {
+            const warning = document.getElementById('marginWarning');
+            const message = document.getElementById('warningMessage');
+            
+            let warningText = '';
+
+            if (netMargin < 25.5) {
+                warningText = `Critical: Net margin is ${netMargin.toFixed(1)}%. Consider increasing price or reducing costs to maintain minimum 25.5% margin.`;
+            } else if (netMargin < 30) {
+                warningText = `Warning: Net margin is ${netMargin.toFixed(1)}%. Consider adjusting pricing to reach 30% margin target.`;
+            } else if (netMargin < 35) {
+                warningText = `Notice: Net margin is ${netMargin.toFixed(1)}%. You're above minimum but below optimal 35% margin.`;
+            }
+
+            if (warningText) {
+                message.textContent = warningText;
+                warning.classList.remove('hidden');
+            } else {
+                warning.classList.add('hidden');
+            }
+        }
+
+        // Update commission input based on sales type
+        function updateCommissionInput() {
+            const commissionSelect = document.getElementById('commissionRate');
+            commissionSelect.innerHTML = '';
+
+            switch (currentState.salesType) {
+                case 'inbound':
+                    [3, 4, 5].forEach(rate => {
+                        const option = document.createElement('option');
+                        option.value = rate;
+                        option.textContent = `${rate}%`;
+                        if (rate === currentState.commissionRate) option.selected = true;
+                        commissionSelect.appendChild(option);
+                    });
+                    break;
+                case 'outbound':
+                    [6, 7, 8].forEach(rate => {
+                        const option = document.createElement('option');
+                        option.value = rate;
+                        option.textContent = `${rate}%`;
+                        if (rate === currentState.commissionRate) option.selected = true;
+                        commissionSelect.appendChild(option);
+                    });
+                    break;
+                case 'direct':
+                    const option = document.createElement('option');
+                    option.value = 0;
+                    option.textContent = '0%';
+                    option.selected = true;
+                    commissionSelect.appendChild(option);
+                    currentState.commissionRate = 0;
+                    break;
+            }
+        }
+
+        // Settings popup functions
+        function openSettings() {
+            document.getElementById('settingsPopup').style.display = 'block';
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsPopup').style.display = 'none';
+        }
+
+        // Event handlers
+        function setupEventHandlers() {
+            // Vehicle selection
+            document.getElementById('vehicleType').addEventListener('change', (e) => {
+                currentState.vehicleType = e.target.value;
+                updateWindowSelection();
+                calculateResults();
+            });
+
+            document.getElementById('yearRange').addEventListener('change', (e) => {
+                currentState.yearRange = e.target.value;
+                updateWindowSelection();
+                calculateResults();
+            });
+
+            // Film quality
+            document.getElementById('filmQuality').addEventListener('change', (e) => {
+                currentState.filmQuality = e.target.value;
+                calculateResults();
+            });
+
+            // Sales type buttons
+            document.getElementById('inboundBtn').addEventListener('click', () => {
+                currentState.salesType = 'inbound';
+                currentState.commissionRate = 4;
+                updateCommissionInput();
+                calculateResults();
+            });
+
+            document.getElementById('outboundBtn').addEventListener('click', () => {
+                currentState.salesType = 'outbound';
+                currentState.commissionRate = 7;
+                updateCommissionInput();
+                calculateResults();
+            });
+
+            document.getElementById('directBtn').addEventListener('click', () => {
+                currentState.salesType = 'direct';
+                currentState.commissionRate = 0;
+                updateCommissionInput();
+                calculateResults();
+            });
+
+            // Commission rate
+            document.getElementById('commissionRate').addEventListener('change', (e) => {
+                currentState.commissionRate = parseInt(e.target.value);
+                calculateResults();
+            });
+
+            // Dealer volume
+            document.getElementById('dealerVolume').addEventListener('change', (e) => {
+                currentState.dealerVolume = e.target.checked;
+                calculateResults();
+            });
+
+            // Tint removal
+            document.getElementById('tintRemoval').addEventListener('change', (e) => {
+                currentState.tintRemoval = e.target.checked;
+                calculateResults();
+            });
+
+            // Settings
+            document.getElementById('settingsBtn').addEventListener('click', openSettings);
+            document.getElementById('closeSettings').addEventListener('click', closeSettings);
+            document.getElementById('cancelSettings').addEventListener('click', closeSettings);
+            document.getElementById('saveSettings').addEventListener('click', saveSettings);
+            document.getElementById('exportSettings').addEventListener('click', exportSettings);
+            document.getElementById('importSettings').addEventListener('click', importSettings);
+
+            // Calculate and reset
+            document.getElementById('calculateBtn').addEventListener('click', calculateResults);
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                currentState = {
+                    vehicleType: '',
+                    yearRange: '',
+                    selectedWindows: [],
+                    filmQuality: 'standard',
+                    salesType: 'inbound',
+                    commissionRate: 4,
+                    dealerVolume: false,
+                    tintRemoval: false
+                };
+                
+                document.getElementById('vehicleType').value = '';
+                document.getElementById('yearRange').value = '';
+                document.getElementById('filmQuality').value = 'standard';
+                document.getElementById('dealerVolume').checked = false;
+                document.getElementById('tintRemoval').checked = false;
+                
+                updateWindowSelection();
+                updateCommissionInput();
+                calculateResults();
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettingsFromStorage();
+            setupEventHandlers();
+            updateCommissionInput();
+            calculateResults();
+        });
+    </script>
+</body>
+</html>
