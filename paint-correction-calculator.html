@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Paint Correction Calculator - Spectrum Outfitters</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .calculator-section { 
+            background-color: #f9fafb; 
+            padding: 1.5rem; 
+            border-radius: 0.5rem; 
+            border: 1px solid #e5e7eb;
+        }
+        .results-section { 
+            background-color: #eff6ff; 
+            padding: 1.5rem; 
+            border-radius: 0.5rem; 
+            border: 1px solid #bfdbfe;
+        }
+        .price-display { 
+            background-color: #dcfce7; 
+            padding: 1rem; 
+            border-radius: 0.5rem; 
+            text-align: center; 
+            border: 1px solid #bbf7d0;
+        }
+        .floor-price { 
+            background-color: #fef2f2; 
+            border: 1px solid #fecaca; 
+            padding: 0.75rem; 
+            border-radius: 0.5rem; 
+        }
+        .cost-breakdown { 
+            background-color: white; 
+            padding: 0.75rem; 
+            border: 1px solid #e5e7eb; 
+            border-radius: 0.5rem; 
+        }
+        .service-info { 
+            background-color: #f0f9ff; 
+            border: 1px solid #bae6fd; 
+            padding: 0.75rem; 
+            border-radius: 0.5rem; 
+        }
+        .ai-analysis { 
+            background-color: #f0fdf4; 
+            border: 1px solid #bbf7d0; 
+            padding: 1rem; 
+            border-radius: 0.5rem; 
+        }
+        .image-upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .image-upload-area:hover {
+            border-color: #3b82f6;
+            background-color: #f8fafc;
+        }
+        .image-upload-area.dragover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        .settings-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .settings-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <main class="max-w-6xl mx-auto p-6">
+        <!-- Header -->
+        <div class="text-center mb-8 relative">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">🤖 Spectrum Outfitters AI Paint Correction Calculator</h1>
+            <p class="text-gray-600">AI-Powered Paint Condition Analysis & Pricing</p>
+            <button id="settingsBtn" class="absolute top-0 right-0 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                ⚙️ Settings
+            </button>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-6">
+            <!-- AI Image Analysis -->
+            <div class="calculator-section">
+                <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                    📸 AI Paint Analysis
+                </h2>
+                
+                <div class="space-y-4">
+                    <!-- Image Upload -->
+                    <div class="image-upload-area" id="imageUploadArea">
+                        <div class="text-center">
+                            <div class="text-4xl mb-2">📷</div>
+                            <p class="text-gray-600 mb-2">Upload paint condition photo</p>
+                            <p class="text-sm text-gray-500">Click or drag & drop image</p>
+                            <input type="file" id="imageInput" accept="image/*" class="hidden">
+                        </div>
+                    </div>
+                    
+                    <!-- Image Preview -->
+                    <div id="imagePreview" class="hidden">
+                        <img id="previewImg" class="w-full h-48 object-cover rounded-lg border">
+                        <button id="analyzeBtn" class="w-full mt-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                            🤖 Analyze with AI
+                        </button>
+                    </div>
+                    
+                    <!-- AI Analysis Results -->
+                    <div id="aiResults" class="ai-analysis hidden">
+                        <h3 class="font-semibold text-green-800 mb-2">AI Analysis Results:</h3>
+                        <div id="aiAnalysisText" class="text-sm text-gray-700"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manual Assessment -->
+            <div class="calculator-section">
+                <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                    🔧 Manual Assessment
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Vehicle Type</label>
+                        <select id="vehicleType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="car">Car/Sedan</option>
+                            <option value="coupe">Coupe/Sports Car</option>
+                            <option value="truck">Truck/Pickup</option>
+                            <option value="suv">SUV/Large Vehicle</option>
+                            <option value="van">Van/Commercial</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Paint Condition</label>
+                        <select id="paintCondition" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="excellent">Excellent (No correction needed)</option>
+                            <option value="good">Good (1-stage correction)</option>
+                            <option value="fair">Fair (2-stage correction)</option>
+                            <option value="poor">Poor (3-stage correction)</option>
+                            <option value="severe">Severe (4-stage correction)</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Surface Type</label>
+                        <select id="surfaceType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="paint">Clear Coat Paint</option>
+                            <option value="ppf">Paint Protection Film</option>
+                            <option value="wrap">Vehicle Wrap</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Customer Type</label>
+                        <div class="flex space-x-2">
+                            <button id="customerBtn" class="flex-1 px-3 py-2 text-sm rounded bg-green-600 text-white">Retail</button>
+                            <button id="dealerBtn" class="flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300">Dealer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section">
+                <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                    💰 Pricing Results
+                </h2>
+                
+                <div class="space-y-4">
+                    <div class="cost-breakdown">
+                        <h3 class="text-lg font-semibold mb-3 text-gray-700">Customer Pricing</h3>
+                        <div class="space-y-2">
+                            <p class="flex justify-between">
+                                <span>Labor Cost:</span>
+                                <span id="laborCost">$0.00</span>
+                            </p>
+                            <p class="flex justify-between">
+                                <span>Material Cost:</span>
+                                <span id="materialCost">$0.00</span>
+                            </p>
+                            <p class="flex justify-between">
+                                <span>Total Cost:</span>
+                                <span id="totalCost">$0.00</span>
+                            </p>
+                            <p class="flex justify-between">
+                                <span>Retail Price:</span>
+                                <span id="retailPrice">$0.00</span>
+                            </p>
+                            <p class="flex justify-between">
+                                <span>Dealer Price:</span>
+                                <span id="dealerPrice">$0.00</span>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="cost-breakdown">
+                        <h3 class="text-lg font-semibold mb-3 text-gray-700">Internal Breakdown</h3>
+                        <div class="space-y-2">
+                            <p class="flex justify-between">
+                                <span>Gross Profit:</span>
+                                <span id="grossProfit">$0.00</span>
+                            </p>
+                            <p class="flex justify-between">
+                                <span>Commission:</span>
+                                <span id="commissionAmount">$0.00</span>
+                            </p>
+                            <p class="flex justify-between">
+                                <span>Net Profit:</span>
+                                <span id="netProfit">$0.00</span>
+                            </p>
+                            <p class="flex justify-between">
+                                <span>Gross Margin:</span>
+                                <span id="grossMargin">0%</span>
+                            </p>
+                            <p class="flex justify-between">
+                                <span>Net Margin:</span>
+                                <span id="netMargin">0%</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Recommendations -->
+        <div id="aiRecommendations" class="ai-analysis mt-6 hidden">
+            <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                🤖 AI Recommendations
+            </h2>
+            <div id="recommendationsContent" class="text-gray-700"></div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-center space-x-4 mt-6">
+            <button id="calculateBtn" class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-lg font-semibold">
+                Calculate Pricing
+            </button>
+            <button id="resetBtn" class="px-6 py-3 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-lg font-semibold">
+                Reset
+            </button>
+            <button onclick="window.location.href='/'" class="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-lg font-semibold">
+                ← Return to Tools
+            </button>
+        </div>
+    </main>
+
+    <!-- Settings Popup -->
+    <div id="settingsPopup" class="settings-popup">
+        <div class="settings-content">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">Paint Correction Settings</h2>
+                <button id="closeSettings" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-lg font-semibold mb-3 text-gray-700">Labor Rates</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Paint Correction Rate ($/hr)</label>
+                            <input type="number" id="correctionRate" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Prep/Cleanup Rate ($/hr)</label>
+                            <input type="number" id="prepRate" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-3 text-gray-700">Material Costs</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Compound Cost ($/oz)</label>
+                            <input type="number" id="compoundCost" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Polish Cost ($/oz)</label>
+                            <input type="number" id="polishCost" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-3 text-gray-700">AI Analysis Settings</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">AI Confidence Threshold (%)</label>
+                            <input type="number" id="confidenceThreshold" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="autoRecommend" class="mr-2">
+                            <label for="autoRecommend" class="text-sm text-gray-700">Auto-apply AI recommendations</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button id="exportSettings" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors">
+                        Export Settings
+                    </button>
+                    <button id="importSettings" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                        Import Settings
+                    </button>
+                    <input type="file" id="importFile" accept=".json" class="hidden">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Constants
+        const BASELINE_MARGIN = 0.30;
+        const RETAIL_MARKUP = 0.30;
+        const DEALER_DISCOUNT = 0.15;
+
+        // Settings
+        let settings = {
+            correctionRate: 85.00,
+            prepRate: 45.00,
+            compoundCost: 2.50,
+            polishCost: 3.00,
+            confidenceThreshold: 75,
+            autoRecommend: true
+        };
+
+        // Current state
+        let currentState = {
+            vehicleType: 'car',
+            paintCondition: 'good',
+            surfaceType: 'paint',
+            customerType: 'customer',
+            aiAnalysis: null
+        };
+
+        // Paint correction stages data
+        const correctionStages = {
+            'excellent': { stages: 0, hours: 0, compound: 0, polish: 0 },
+            'good': { stages: 1, hours: 2, compound: 2, polish: 1 },
+            'fair': { stages: 2, hours: 4, compound: 4, polish: 2 },
+            'poor': { stages: 3, hours: 6, compound: 6, polish: 3 },
+            'severe': { stages: 4, hours: 8, compound: 8, polish: 4 }
+        };
+
+        // Vehicle size multipliers
+        const vehicleMultipliers = {
+            'car': 1.0,
+            'coupe': 0.8,
+            'truck': 1.3,
+            'suv': 1.2,
+            'van': 1.5
+        };
+
+        // AI Analysis function (simulated)
+        async function analyzePaintCondition(imageFile) {
+            // Simulate AI analysis delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Simulate AI analysis results
+            const conditions = ['excellent', 'good', 'fair', 'poor', 'severe'];
+            const randomCondition = conditions[Math.floor(Math.random() * conditions.length)];
+            
+            const analysisResults = {
+                condition: randomCondition,
+                confidence: Math.floor(Math.random() * 30) + 70, // 70-100%
+                issues: generateIssues(randomCondition),
+                recommendations: generateRecommendations(randomCondition)
+            };
+            
+            return analysisResults;
+        }
+
+        function generateIssues(condition) {
+            const issueMap = {
+                'excellent': ['Minor surface contamination'],
+                'good': ['Light swirl marks', 'Minor oxidation'],
+                'fair': ['Moderate swirl marks', 'Oxidation', 'Light scratches'],
+                'poor': ['Heavy swirl marks', 'Oxidation', 'Scratches', 'Holograms'],
+                'severe': ['Severe swirl marks', 'Heavy oxidation', 'Deep scratches', 'Holograms', 'Buffer trails']
+            };
+            return issueMap[condition] || [];
+        }
+
+        function generateRecommendations(condition) {
+            const recMap = {
+                'excellent': ['Light polish recommended', 'Protective coating application'],
+                'good': ['1-stage correction', 'Light compound + polish'],
+                'fair': ['2-stage correction', 'Medium compound + polish'],
+                'poor': ['3-stage correction', 'Heavy compound + medium compound + polish'],
+                'severe': ['4-stage correction', 'Heavy compound + medium compound + light compound + polish']
+            };
+            return recMap[condition] || [];
+        }
+
+        // Calculate results
+        function calculateResults() {
+            const stage = correctionStages[currentState.paintCondition];
+            const vehicleMultiplier = vehicleMultipliers[currentState.vehicleType];
+            
+            // Calculate labor hours
+            const correctionHours = stage.hours * vehicleMultiplier;
+            const prepHours = 1 * vehicleMultiplier; // 1 hour prep per vehicle
+            
+            // Calculate costs
+            const laborCost = (correctionHours * settings.correctionRate) + (prepHours * settings.prepRate);
+            const materialCost = (stage.compound * settings.compoundCost) + (stage.polish * settings.polishCost);
+            const totalCost = laborCost + materialCost;
+            
+            // Calculate pricing
+            const baselinePrice = totalCost / (1 - BASELINE_MARGIN);
+            const retailPrice = baselinePrice * (1 + RETAIL_MARKUP);
+            const dealerPrice = retailPrice * (1 - DEALER_DISCOUNT);
+            const finalPrice = currentState.customerType === 'dealer' ? dealerPrice : retailPrice;
+            
+            // Calculate profit and margins
+            const grossProfit = finalPrice - totalCost;
+            const commissionAmount = grossProfit * 0.05; // 5% commission
+            const netProfit = grossProfit - commissionAmount;
+            const grossMargin = finalPrice > 0 ? (grossProfit / finalPrice) * 100 : 0;
+            const netMargin = finalPrice > 0 ? (netProfit / finalPrice) * 100 : 0;
+            
+            return {
+                laborCost,
+                materialCost,
+                totalCost,
+                retailPrice,
+                dealerPrice,
+                finalPrice,
+                grossProfit,
+                commissionAmount,
+                netProfit,
+                grossMargin,
+                netMargin,
+                correctionHours,
+                prepHours,
+                stages: stage.stages
+            };
+        }
+
+        // Update display
+        function updateDisplay() {
+            const results = calculateResults();
+            
+            document.getElementById('laborCost').textContent = `$${results.laborCost.toFixed(2)}`;
+            document.getElementById('materialCost').textContent = `$${results.materialCost.toFixed(2)}`;
+            document.getElementById('totalCost').textContent = `$${results.totalCost.toFixed(2)}`;
+            document.getElementById('retailPrice').textContent = `$${results.retailPrice.toFixed(2)}`;
+            document.getElementById('dealerPrice').textContent = `$${results.dealerPrice.toFixed(2)}`;
+            document.getElementById('grossProfit').textContent = `$${results.grossProfit.toFixed(2)}`;
+            document.getElementById('commissionAmount').textContent = `$${results.commissionAmount.toFixed(2)}`;
+            document.getElementById('netProfit').textContent = `$${results.netProfit.toFixed(2)}`;
+            document.getElementById('grossMargin').textContent = `${results.grossMargin.toFixed(1)}%`;
+            document.getElementById('netMargin').textContent = `${results.netMargin.toFixed(1)}%`;
+        }
+
+        // Setup event handlers
+        function setupEventHandlers() {
+            // Image upload
+            const imageUploadArea = document.getElementById('imageUploadArea');
+            const imageInput = document.getElementById('imageInput');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            
+            imageUploadArea.addEventListener('click', () => imageInput.click());
+            imageUploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                imageUploadArea.classList.add('dragover');
+            });
+            imageUploadArea.addEventListener('dragleave', () => {
+                imageUploadArea.classList.remove('dragover');
+            });
+            imageUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                imageUploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleImageUpload(files[0]);
+                }
+            });
+            
+            imageInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleImageUpload(e.target.files[0]);
+                }
+            });
+            
+            analyzeBtn.addEventListener('click', async () => {
+                const file = imageInput.files[0];
+                if (file) {
+                    analyzeBtn.textContent = '🤖 Analyzing...';
+                    analyzeBtn.disabled = true;
+                    
+                    try {
+                        const analysis = await analyzePaintCondition(file);
+                        displayAIAnalysis(analysis);
+                        currentState.aiAnalysis = analysis;
+                        
+                        if (settings.autoRecommend) {
+                            document.getElementById('paintCondition').value = analysis.condition;
+                            currentState.paintCondition = analysis.condition;
+                            updateDisplay();
+                        }
+                    } catch (error) {
+                        console.error('AI analysis failed:', error);
+                        alert('AI analysis failed. Please try again.');
+                    }
+                    
+                    analyzeBtn.textContent = '🤖 Analyze with AI';
+                    analyzeBtn.disabled = false;
+                }
+            });
+            
+            // Form inputs
+            document.getElementById('vehicleType').addEventListener('change', (e) => {
+                currentState.vehicleType = e.target.value;
+                updateDisplay();
+            });
+            
+            document.getElementById('paintCondition').addEventListener('change', (e) => {
+                currentState.paintCondition = e.target.value;
+                updateDisplay();
+            });
+            
+            document.getElementById('surfaceType').addEventListener('change', (e) => {
+                currentState.surfaceType = e.target.value;
+                updateDisplay();
+            });
+            
+            // Customer type buttons
+            document.getElementById('customerBtn').addEventListener('click', () => {
+                currentState.customerType = 'customer';
+                document.getElementById('customerBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-green-600 text-white';
+                document.getElementById('dealerBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                updateDisplay();
+            });
+            
+            document.getElementById('dealerBtn').addEventListener('click', () => {
+                currentState.customerType = 'dealer';
+                document.getElementById('dealerBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-green-600 text-white';
+                document.getElementById('customerBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                updateDisplay();
+            });
+            
+            // Settings
+            document.getElementById('settingsBtn').addEventListener('click', () => {
+                document.getElementById('settingsPopup').style.display = 'flex';
+                loadSettingsToForm();
+            });
+            
+            document.getElementById('closeSettings').addEventListener('click', () => {
+                document.getElementById('settingsPopup').style.display = 'none';
+            });
+            
+            // Calculate and reset buttons
+            document.getElementById('calculateBtn').addEventListener('click', updateDisplay);
+            document.getElementById('resetBtn').addEventListener('click', resetCalculator);
+        }
+
+        function handleImageUpload(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const previewImg = document.getElementById('previewImg');
+                previewImg.src = e.target.result;
+                document.getElementById('imagePreview').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function displayAIAnalysis(analysis) {
+            const aiResults = document.getElementById('aiResults');
+            const aiAnalysisText = document.getElementById('aiAnalysisText');
+            
+            let analysisHTML = `
+                <div class="mb-3">
+                    <strong>Condition:</strong> ${analysis.condition.charAt(0).toUpperCase() + analysis.condition.slice(1)}<br>
+                    <strong>Confidence:</strong> ${analysis.confidence}%
+                </div>
+                <div class="mb-3">
+                    <strong>Issues Detected:</strong>
+                    <ul class="list-disc list-inside ml-2">
+                        ${analysis.issues.map(issue => `<li>${issue}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+            
+            aiAnalysisText.innerHTML = analysisHTML;
+            aiResults.classList.remove('hidden');
+            
+            // Show recommendations
+            displayRecommendations(analysis);
+        }
+
+        function displayRecommendations(analysis) {
+            const recommendationsDiv = document.getElementById('aiRecommendations');
+            const contentDiv = document.getElementById('recommendationsContent');
+            
+            let recommendationsHTML = `
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <h3 class="font-semibold text-green-800 mb-2">Recommended Treatment:</h3>
+                        <ul class="list-disc list-inside text-sm">
+                            ${analysis.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-green-800 mb-2">Estimated Timeline:</h3>
+                        <p class="text-sm">${correctionStages[analysis.condition].hours} hours of correction work</p>
+                        <p class="text-sm">${correctionStages[analysis.condition].stages} stage correction process</p>
+                    </div>
+                </div>
+            `;
+            
+            contentDiv.innerHTML = recommendationsHTML;
+            recommendationsDiv.classList.remove('hidden');
+        }
+
+        function loadSettingsToForm() {
+            document.getElementById('correctionRate').value = settings.correctionRate;
+            document.getElementById('prepRate').value = settings.prepRate;
+            document.getElementById('compoundCost').value = settings.compoundCost;
+            document.getElementById('polishCost').value = settings.polishCost;
+            document.getElementById('confidenceThreshold').value = settings.confidenceThreshold;
+            document.getElementById('autoRecommend').checked = settings.autoRecommend;
+        }
+
+        function saveSettings() {
+            settings.correctionRate = parseFloat(document.getElementById('correctionRate').value);
+            settings.prepRate = parseFloat(document.getElementById('prepRate').value);
+            settings.compoundCost = parseFloat(document.getElementById('compoundCost').value);
+            settings.polishCost = parseFloat(document.getElementById('polishCost').value);
+            settings.confidenceThreshold = parseInt(document.getElementById('confidenceThreshold').value);
+            settings.autoRecommend = document.getElementById('autoRecommend').checked;
+            
+            localStorage.setItem('paintCorrectionSettings', JSON.stringify(settings));
+        }
+
+        function loadSettingsFromStorage() {
+            const saved = localStorage.getItem('paintCorrectionSettings');
+            if (saved) {
+                settings = { ...settings, ...JSON.parse(saved) };
+            }
+        }
+
+        function resetCalculator() {
+            currentState = {
+                vehicleType: 'car',
+                paintCondition: 'good',
+                surfaceType: 'paint',
+                customerType: 'customer',
+                aiAnalysis: null
+            };
+            
+            document.getElementById('vehicleType').value = 'car';
+            document.getElementById('paintCondition').value = 'good';
+            document.getElementById('surfaceType').value = 'paint';
+            document.getElementById('customerBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-green-600 text-white';
+            document.getElementById('dealerBtn').className = 'flex-1 px-3 py-2 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+            
+            // Reset image upload
+            document.getElementById('imageInput').value = '';
+            document.getElementById('imagePreview').classList.add('hidden');
+            document.getElementById('aiResults').classList.add('hidden');
+            document.getElementById('aiRecommendations').classList.add('hidden');
+            
+            updateDisplay();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSettingsFromStorage();
+            setupEventHandlers();
+            updateDisplay();
+        });
+    </script>
+</body>
+</html>
