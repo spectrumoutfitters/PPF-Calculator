@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat Assistant - Spectrum Outfitters</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .chat-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 400px;
+            height: 600px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+        }
+        .chat-header {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            padding: 16px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+        .message {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .message.user {
+            justify-content: flex-end;
+        }
+        .message.assistant {
+            justify-content: flex-start;
+        }
+        .message-content {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .message.user .message-content {
+            background: #3b82f6;
+            color: white;
+        }
+        .message.assistant .message-content {
+            background: white;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+        }
+        .chat-input {
+            padding: 16px;
+            border-top: 1px solid #e5e7eb;
+            background: white;
+            border-radius: 0 0 12px 12px;
+        }
+        .input-group {
+            display: flex;
+            gap: 8px;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 24px;
+            outline: none;
+            font-size: 14px;
+        }
+        .chat-input input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .send-button {
+            padding: 12px 16px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .send-button:hover {
+            background: #2563eb;
+        }
+        .send-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .chat-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1001;
+            transition: transform 0.2s;
+        }
+        .chat-toggle:hover {
+            transform: scale(1.1);
+        }
+        .pricing-result {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+        }
+        .pricing-result h4 {
+            color: #166534;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .pricing-detail {
+            display: flex;
+            justify-content: space-between;
+            margin: 4px 0;
+            font-size: 13px;
+        }
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: #6b7280;
+            font-style: italic;
+        }
+        .typing-dots {
+            display: flex;
+            gap: 2px;
+        }
+        .typing-dot {
+            width: 4px;
+            height: 4px;
+            background: #6b7280;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Chat Toggle Button -->
+    <button id="chatToggle" class="chat-toggle">
+        💬
+    </button>
+
+    <!-- Chat Container -->
+    <div id="chatContainer" class="chat-container">
+        <div class="chat-header">
+            <div>
+                <h3 class="font-semibold">AI Assistant</h3>
+                <p class="text-sm opacity-90">Get instant pricing quotes</p>
+            </div>
+            <button id="closeChat" class="text-white hover:text-gray-200 text-xl">&times;</button>
+        </div>
+        
+        <div id="chatMessages" class="chat-messages">
+            <div class="message assistant">
+                <div class="message-content">
+                    👋 Hi! I'm your AI assistant. I can help you get instant pricing quotes for:
+                    <br><br>
+                    🚗 <strong>PPF</strong> - Paint Protection Film
+                    <br>🕶️ <strong>Tint</strong> - Window Tinting  
+                    <br>✨ <strong>Ceramic</strong> - Ceramic Coating
+                    <br>🔧 <strong>Paint Correction</strong> - Paint Correction
+                    <br><br>
+                    Just tell me what car and service you need!
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-input">
+            <div class="input-group">
+                <input type="text" id="chatInput" placeholder="e.g., '2020 BMW M3 needs full front PPF' or 'Honda Civic ceramic coating quote'">
+                <button id="sendButton" class="send-button">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="ai-chat-integration.js"></script>
+    <script>
+        // Chat state
+        let isChatOpen = false;
+        let isProcessing = false;
+        let calculatorIntegration = new CalculatorIntegration();
+
+        // Calculator data
+        const calculators = {
+            ppf: {
+                name: 'PPF Calculator',
+                url: '/ppf',
+                services: ['full front', 'track pack', 'full vehicle', 'replacement parts'],
+                vehicles: ['car', 'coupe', 'truck', 'suv', 'van']
+            },
+            tint: {
+                name: 'Tint Calculator', 
+                url: '/tint',
+                services: ['window tinting', 'tint removal'],
+                vehicles: ['car', 'coupe', 'truck', 'suv', 'van']
+            },
+            ceramic: {
+                name: 'Ceramic Coating Calculator',
+                url: '/ceramic', 
+                services: ['ceramic coating', 'paint correction'],
+                vehicles: ['car', 'coupe', 'truck', 'suv', 'van']
+            },
+            paintCorrection: {
+                name: 'Paint Correction Calculator',
+                url: '/paint-correction',
+                services: ['paint correction', 'detailing'],
+                vehicles: ['car', 'coupe', 'truck', 'suv', 'van']
+            }
+        };
+
+        // Initialize chat
+        document.addEventListener('DOMContentLoaded', function() {
+            setupChatEventHandlers();
+        });
+
+        function setupChatEventHandlers() {
+            // Toggle chat
+            document.getElementById('chatToggle').addEventListener('click', toggleChat);
+            document.getElementById('closeChat').addEventListener('click', closeChat);
+            
+            // Send message
+            document.getElementById('sendButton').addEventListener('click', sendMessage);
+            document.getElementById('chatInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !isProcessing) {
+                    sendMessage();
+                }
+            });
+        }
+
+        function toggleChat() {
+            isChatOpen = !isChatOpen;
+            const container = document.getElementById('chatContainer');
+            const toggle = document.getElementById('chatToggle');
+            
+            if (isChatOpen) {
+                container.style.display = 'flex';
+                toggle.textContent = '✕';
+            } else {
+                container.style.display = 'none';
+                toggle.textContent = '💬';
+            }
+        }
+
+        function closeChat() {
+            isChatOpen = false;
+            document.getElementById('chatContainer').style.display = 'none';
+            document.getElementById('chatToggle').textContent = '💬';
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message || isProcessing) return;
+            
+            // Add user message
+            addMessage(message, 'user');
+            input.value = '';
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            // Process message
+            isProcessing = true;
+            try {
+                const response = await processMessage(message);
+                hideTypingIndicator();
+                addMessage(response, 'assistant');
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage('Sorry, I encountered an error. Please try again.', 'assistant');
+                console.error('Chat error:', error);
+            }
+            
+            isProcessing = false;
+        }
+
+        function addMessage(content, sender) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = content;
+            
+            messageDiv.appendChild(contentDiv);
+            messagesContainer.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typingIndicator';
+            typingDiv.className = 'message assistant';
+            
+            typingDiv.innerHTML = `
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        <span>AI is thinking</span>
+                        <div class="typing-dots">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(typingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        async function processMessage(message) {
+            // Parse the message to extract car and service information
+            const parsed = parseMessage(message);
+            parsed.originalMessage = message; // Store original message for context
+            
+            if (!parsed.service || !parsed.vehicle) {
+                return `I need more information to give you a quote. Please tell me:
+                <br><br>
+                🚗 <strong>What vehicle?</strong> (e.g., "2020 BMW M3", "Honda Civic")
+                <br>🔧 <strong>What service?</strong> (e.g., "PPF", "tinting", "ceramic coating")
+                <br><br>
+                Example: "2020 BMW M3 needs full front PPF"`;
+            }
+            
+            // Determine which calculator to use
+            const calculator = determineCalculator(parsed.service);
+            if (!calculator) {
+                return `I don't recognize that service. I can help with:
+                <br><br>
+                🚗 <strong>PPF</strong> - Paint Protection Film
+                <br>🕶️ <strong>Tint</strong> - Window Tinting  
+                <br>✨ <strong>Ceramic</strong> - Ceramic Coating
+                <br>🔧 <strong>Paint Correction</strong> - Paint Correction`;
+            }
+            
+            // Get pricing using real calculator integration
+            const pricing = await getPricing(calculator, parsed.service, parsed.vehicle, parsed);
+            
+            // Format response
+            return formatPricingResponse(parsed, calculator, pricing);
+        }
+
+        function parseMessage(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            // Extract vehicle information
+            const vehiclePatterns = [
+                /(\d{4})\s+([a-z\s]+)/i, // "2020 BMW M3"
+                /([a-z\s]+)\s+(\d{4})/i, // "BMW M3 2020"
+                /([a-z\s]+)/i // Just vehicle name
+            ];
+            
+            let vehicle = null;
+            let year = null;
+            
+            for (const pattern of vehiclePatterns) {
+                const match = lowerMessage.match(pattern);
+                if (match) {
+                    if (match[1] && match[1].length === 4 && !isNaN(match[1])) {
+                        year = match[1];
+                        vehicle = match[2].trim();
+                    } else if (match[2] && match[2].length === 4 && !isNaN(match[2])) {
+                        year = match[2];
+                        vehicle = match[1].trim();
+                    } else {
+                        vehicle = match[1].trim();
+                    }
+                    break;
+                }
+            }
+            
+            // Extract service information
+            const serviceKeywords = {
+                'ppf': ['ppf', 'paint protection', 'film', 'protection film'],
+                'tint': ['tint', 'tinting', 'window tint', 'tinted windows'],
+                'ceramic': ['ceramic', 'coating', 'ceramic coating'],
+                'paintCorrection': ['paint correction', 'correction', 'detailing', 'detail']
+            };
+            
+            let service = null;
+            for (const [key, keywords] of Object.entries(serviceKeywords)) {
+                if (keywords.some(keyword => lowerMessage.includes(keyword))) {
+                    service = key;
+                    break;
+                }
+            }
+            
+            return { vehicle, year, service };
+        }
+
+        function determineCalculator(service) {
+            return calculators[service] || null;
+        }
+
+        async function getPricing(calculator, service, vehicle, parsedMessage) {
+            try {
+                // Prepare parameters for the real calculator
+                const params = prepareCalculatorParams(service, vehicle, parsedMessage);
+                
+                // Use the real calculator integration
+                const result = await calculatorIntegration.calculate(service, params);
+                
+                return result;
+            } catch (error) {
+                console.error('Pricing calculation error:', error);
+                // Fallback to simplified calculation
+                return getSimplifiedPricing(service, vehicle);
+            }
+        }
+
+        function prepareCalculatorParams(service, vehicle, parsedMessage) {
+            const vehicleType = determineVehicleType(vehicle);
+            const customerType = parsedMessage.customerType || 'customer';
+            
+            switch (service) {
+                case 'ppf':
+                    return {
+                        vehicleType,
+                        serviceType: determinePPFService(parsedMessage.originalMessage),
+                        ppfType: 'gloss', // Default to gloss
+                        customerType
+                    };
+                case 'tint':
+                    return {
+                        vehicleType,
+                        windows: 'all', // Default to all windows
+                        filmType: 'standard',
+                        customerType,
+                        tintRemoval: parsedMessage.originalMessage.toLowerCase().includes('removal')
+                    };
+                case 'ceramic':
+                    return {
+                        vehicleType,
+                        coatingType: determineCeramicType(parsedMessage.originalMessage),
+                        paintCondition: 'good', // Default
+                        customerType
+                    };
+                case 'paintCorrection':
+                    return {
+                        vehicleType,
+                        paintCondition: determinePaintCondition(parsedMessage.originalMessage),
+                        customerType
+                    };
+                default:
+                    return { vehicleType, customerType };
+            }
+        }
+
+        function determinePPFService(message) {
+            const lowerMessage = message.toLowerCase();
+            if (lowerMessage.includes('full front')) return 'full-front';
+            if (lowerMessage.includes('track pack')) return 'track-pack';
+            if (lowerMessage.includes('full vehicle')) return 'full-vehicle';
+            if (lowerMessage.includes('replacement')) return 'replacement-parts';
+            return 'full-front'; // Default
+        }
+
+        function determineCeramicType(message) {
+            const lowerMessage = message.toLowerCase();
+            if (lowerMessage.includes('5 year') || lowerMessage.includes('5-year')) return '5-year';
+            if (lowerMessage.includes('7 year') || lowerMessage.includes('7-year')) return '7-year';
+            return '3-year'; // Default
+        }
+
+        function determinePaintCondition(message) {
+            const lowerMessage = message.toLowerCase();
+            if (lowerMessage.includes('severe') || lowerMessage.includes('bad')) return 'severe';
+            if (lowerMessage.includes('poor')) return 'poor';
+            if (lowerMessage.includes('fair')) return 'fair';
+            if (lowerMessage.includes('excellent') || lowerMessage.includes('good')) return 'excellent';
+            return 'good'; // Default
+        }
+
+        function getSimplifiedPricing(service, vehicle) {
+            // Fallback simplified pricing
+            const vehicleType = determineVehicleType(vehicle);
+            const multipliers = { 'car': 1.0, 'coupe': 0.8, 'truck': 1.3, 'suv': 1.2, 'van': 1.5 };
+            const multiplier = multipliers[vehicleType] || 1.0;
+            
+            const baseCosts = {
+                'ppf': { base: 1200, labor: 8 },
+                'tint': { base: 400, labor: 4 },
+                'ceramic': { base: 800, labor: 6 },
+                'paintCorrection': { base: 600, labor: 4 }
+            };
+            
+            const costs = baseCosts[service] || { base: 500, labor: 4 };
+            const laborCost = costs.labor * 85 * multiplier;
+            const materialCost = costs.base * multiplier;
+            const totalCost = laborCost + materialCost;
+            const retailPrice = totalCost / 0.7;
+            const dealerPrice = retailPrice * 0.85;
+            
+            return {
+                laborCost,
+                materialCost,
+                totalCost,
+                retailPrice,
+                dealerPrice,
+                finalPrice: retailPrice,
+                laborHours: costs.labor * multiplier
+            };
+        }
+
+        function determineVehicleType(vehicle) {
+            const lowerVehicle = vehicle.toLowerCase();
+            if (lowerVehicle.includes('truck') || lowerVehicle.includes('pickup')) return 'truck';
+            if (lowerVehicle.includes('suv')) return 'suv';
+            if (lowerVehicle.includes('van')) return 'van';
+            if (lowerVehicle.includes('coupe') || lowerVehicle.includes('sports')) return 'coupe';
+            return 'car';
+        }
+
+        function formatPricingResponse(parsed, calculator, pricing) {
+            const vehicleText = parsed.year ? `${parsed.year} ${parsed.vehicle}` : parsed.vehicle;
+            const serviceText = calculator.name.replace(' Calculator', '');
+            
+            return `
+                <div class="pricing-result">
+                    <h4>💰 ${serviceText} Quote for ${vehicleText}</h4>
+                    <div class="pricing-detail">
+                        <span>Labor Cost:</span>
+                        <span>$${pricing.laborCost.toFixed(2)}</span>
+                    </div>
+                    <div class="pricing-detail">
+                        <span>Material Cost:</span>
+                        <span>$${pricing.materialCost.toFixed(2)}</span>
+                    </div>
+                    <div class="pricing-detail">
+                        <span>Total Cost:</span>
+                        <span>$${pricing.totalCost.toFixed(2)}</span>
+                    </div>
+                    <div class="pricing-detail">
+                        <span><strong>Final Price:</strong></span>
+                        <span><strong>$${pricing.finalPrice.toFixed(2)}</strong></span>
+                    </div>
+                    <div class="pricing-detail">
+                        <span>Retail Price:</span>
+                        <span>$${pricing.retailPrice.toFixed(2)}</span>
+                    </div>
+                    <div class="pricing-detail">
+                        <span>Dealer Price:</span>
+                        <span>$${pricing.dealerPrice.toFixed(2)}</span>
+                    </div>
+                    <div class="pricing-detail">
+                        <span>Estimated Hours:</span>
+                        <span>${pricing.laborHours.toFixed(1)} hours</span>
+                    </div>
+                    ${pricing.stages ? `<div class="pricing-detail"><span>Correction Stages:</span><span>${pricing.stages}</span></div>` : ''}
+                </div>
+                <br>
+                <em>💡 This quote uses your actual calculator pricing. For detailed customization, use the <a href="${calculator.url}" target="_blank" style="color: #3b82f6;">${calculator.name}</a></em>
+            `;
+        }
+    </script>
+</body>
+</html>
